@@ -77,7 +77,7 @@ public class Firewall
 		policy.Rules.Remove(name);
     }
 
-	private void DeleteAllRules()
+	public void DeleteAllRules()
     {
 		foreach (INetFwRule rule in policy.Rules)
         {
