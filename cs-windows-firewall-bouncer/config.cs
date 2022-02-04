@@ -8,7 +8,7 @@ public class Config
 	public string ApiEndpoint { get; set; }
 	public string ApiKey { get; set; }
 	public string LogLevel { get; set; }
-	public string UpdateFrequency { get; set; }
+	public int UpdateFrequency { get; set; }
 	public string LogMedia { get; set; }
 	public string LogDir { get; set; }
 

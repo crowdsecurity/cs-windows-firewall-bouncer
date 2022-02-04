@@ -122,21 +122,6 @@ public class Firewall
 		return false;
 	}
 
-	private bool isLocalIP(string ip)
-    {
-		return false;
-    }
-
-	private bool isLocalRange(string range)
-    {
-		return false;
-    }
-
-	private string expandCIDR(string range)
-    {
-		return string.Empty;
-    }
-
 	private FirewallRule findBucketForIp(string ip)
     {
 		foreach (FirewallRule rule in rulesBucket)

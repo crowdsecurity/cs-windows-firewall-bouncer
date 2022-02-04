@@ -4,14 +4,18 @@ using System.Threading.Tasks;
 public class DecisionsManager
 {
 	private ApiClient apiClient;
-	private TimeSpan interval;
 	private Firewall firewall;
+	private int interval;
 
 	private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 	public DecisionsManager(BouncerConfig config)
 	{
 		apiClient = new(config.config.ApiKey, config.config.ApiEndpoint);
-		//interval = TimeSpan.Parse(config.config.UpdateFrequency);
+		interval = config.config.UpdateFrequency;
+		if (interval <= 0)
+        {
+			interval = 10;
+        }
 		firewall = new Firewall();
 
 		if (firewall.IsEnabled() == false)
@@ -19,20 +23,18 @@ public class DecisionsManager
 			throw new Exception("Firewall is not enabled for the current profile, the bouncer won't work.");
 		}
 		Logger.Debug("Firewall is enabled for profile {0}", firewall.GetCurrentProfile());
-		//firewall.DeleteRule(); //Delete the rule on startup to make sure we have a clean state
-		//firewall.CreateRule();
-
 	}
 
 	public async Task<bool> Run()
     {
 		var decisions = await apiClient.GetDecisions(true);
 		firewall.UpdateRule(decisions);
+		var interval = this.interval * 1000;
 		while (true)
         {
 			decisions = await apiClient.GetDecisions(false);
 			firewall.UpdateRule(decisions);
-			Task.Delay(1000).Wait();
+			Task.Delay(interval).Wait();
         }
     }
 }
