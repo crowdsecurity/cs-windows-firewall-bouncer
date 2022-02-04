@@ -6,6 +6,8 @@ public class DecisionsManager
 	private ApiClient apiClient;
 	private TimeSpan interval;
 	private Firewall firewall;
+
+	private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 	public DecisionsManager(BouncerConfig config)
 	{
 		apiClient = new(config.config.ApiKey, config.config.ApiEndpoint);
@@ -16,7 +18,7 @@ public class DecisionsManager
 		{
 			throw new Exception("Firewall is not enabled for the current profile, the bouncer won't work.");
 		}
-		Console.WriteLine("Firewall is enabled for profile {0}", firewall.GetCurrentProfile());
+		Logger.Debug("Firewall is enabled for profile {0}", firewall.GetCurrentProfile());
 		//firewall.DeleteRule(); //Delete the rule on startup to make sure we have a clean state
 		//firewall.CreateRule();
 

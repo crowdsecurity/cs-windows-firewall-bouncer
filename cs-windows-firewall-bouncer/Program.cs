@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-
 using CommandLine;
 
 namespace cs_windows_firewall_bouncer
@@ -17,6 +16,27 @@ namespace cs_windows_firewall_bouncer
             public bool Debug { get; set; }
             //[Option('s', "service", Required = false, Default = "", HelpText = "Manage ")]
 
+        }
+
+        static private NLog.LogLevel GetLogLevel(string name)
+        {
+            switch (name)
+            {
+                case "trace":
+                    return NLog.LogLevel.Trace;
+                case "debug":
+                    return NLog.LogLevel.Debug;
+                case "info":
+                    return NLog.LogLevel.Info;
+                case "warn":
+                    return NLog.LogLevel.Warn;
+                case "error":
+                    return NLog.LogLevel.Error;
+                case "fatal":
+                    return NLog.LogLevel.Fatal;
+                default:
+                    return NLog.LogLevel.Info;
+            }
         }
 
         static async Task Main(string[] args)
@@ -47,6 +67,42 @@ namespace cs_windows_firewall_bouncer
                 Console.WriteLine("Could not load configuration: {0}", ex.Message);
                 return;
             }
+
+
+            var loggerConfig = new NLog.Config.LoggingConfiguration();
+            var logLevel = NLog.LogLevel.Info;
+
+            if (config.config.LogLevel != "")
+            {
+                logLevel = GetLogLevel(config.config.LogLevel);
+            }
+
+            if (opts.Debug)
+            {
+                logLevel = NLog.LogLevel.Debug;
+            }
+
+            if (config.config.LogMedia == "file" || !Environment.UserInteractive)
+            {
+                if (config.config.LogDir == "")
+                {
+                    config.config.LogDir = "C:\\ProgramData\\CrowdSec\\logs";
+                }
+                var logfile = new NLog.Targets.FileTarget("logfile") { FileName = System.IO.Path.Combine(config.config.LogDir, "cs_windows_firewall_bouncer.log")  };
+                loggerConfig.AddRule(logLevel, NLog.LogLevel.Fatal, logfile);
+            }
+            else if (config.config.LogMedia == "console")
+            {
+                var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
+                loggerConfig.AddRule(logLevel, NLog.LogLevel.Fatal, logconsole);
+            }
+            else
+            {
+                Console.WriteLine("Unknown value for log_media: {0}", config.config.LogMedia);
+                return;
+            }
+            
+            NLog.LogManager.Configuration = loggerConfig; 
 
             if (opts.RemoveAll)
             {

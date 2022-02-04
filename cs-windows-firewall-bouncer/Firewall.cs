@@ -47,6 +47,8 @@ public class FirewallRule
 
 public class Firewall
 {
+	private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
 	private INetFwMgr fwManager;
 	private INetFwPolicy2 policy;
 	private List<FirewallRule> rulesBucket = new();
@@ -73,7 +75,7 @@ public class Firewall
 
 	public void DeleteRule(string name)
     {
-		Console.WriteLine("Deleting FW rule");
+		Logger.Info("Deleting FW rule");
 		policy.Rules.Remove(name);
     }
 
@@ -83,6 +85,7 @@ public class Firewall
         {
 			if (rule.Name.StartsWith("crowdsec-blocklist"))
             {
+				Logger.Debug("Deleting rule {0}", rule.Name);
 				policy.Rules.Remove(rule.Name);
             }
         }
@@ -98,7 +101,7 @@ public class Firewall
 		}
 		catch (Exception ex)
         {
-			Console.WriteLine("Exception: {0}", ex.Message);
+			Logger.Error("Could not find rule {0}: {1}", name, ex.Message);
         }
 		return null;
 	}
@@ -166,10 +169,6 @@ public class Firewall
     {
 		foreach (var decision in decisions.Deleted)
         {
-			/*if (decision.scope != "Ip")
-			{
-				continue;
-			}*/
 			var bucket = findBucketForIp(decision.value);
 			if (bucket == null)
             {
@@ -180,10 +179,6 @@ public class Firewall
 
 		foreach (var decision in decisions.New)
         {
-			/*if (decision.scope != "Ip")
-            {
-				continue;
-            }*/
 			var bucket = findAvailableBucket();
 			bucket.AddIP(decision.value);
         }
@@ -195,6 +190,7 @@ public class Firewall
 			var content = rule.ToString();
 			if (content.Length == 0)
 			{
+				Logger.Debug("Adding bucket {0} to delete list", rule.GetName());
 				toDelete.Add(rule);
 				DeleteRule(rule.GetName());
 			}
@@ -208,19 +204,16 @@ public class Firewall
         {
 			rulesBucket.Remove(fwRule);
 		}
-		//Console.WriteLine(ruleContent);
-		//rule.RemoteAddresses = ruleContent;
-		//rule.Enabled = true;
 	}
 
 	public void CreateRule(string name)
     {
 		if (RuleExists(name))
         {
-			Console.WriteLine("Rule already exists, not doing anything");
+			Logger.Debug("Rule {0} already exists, not doing anything", name);
 			return;
         }
-		Console.WriteLine("Creating FW rule");
+		Logger.Debug("Creating FW rule");
 		INetFwRule2 rule = (INetFwRule2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwRule"));
 		rule.Name = name;
 		rule.Description = "CrowdSec Managed rule";

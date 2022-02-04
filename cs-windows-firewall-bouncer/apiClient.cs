@@ -31,6 +31,8 @@ public class ApiClient
 	private readonly HttpClient client = new HttpClient();
 	private string apiKey;
 	private string apiEndpoint;
+
+	private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 	public ApiClient(string apiKey, string apiEndpoint)
 	{
 		if (apiEndpoint.EndsWith('/'))
@@ -48,25 +50,23 @@ public class ApiClient
 
 	public async Task<DecisionStreamResponse> GetDecisions(bool startup)
     {
-		Console.WriteLine("starting getdecisions");
+		Logger.Debug("starting GetDecisions");
 		HttpResponseMessage response;
 		try
 		{
 			var uri = apiEndpoint + "v1/decisions/stream?startup=" + startup.ToString().ToLower() + "&scope=ip,range";
-			Console.WriteLine("requesting {0}", uri);
+			Logger.Trace("requesting {0}", uri);
 			response = await client.GetAsync(uri);
 			response.EnsureSuccessStatusCode();
 		}
 		catch (Exception ex)
         {
-			Console.WriteLine("Could not get decisions: {0}", ex.Message);
+			Logger.Error("Could not get decisions: {0}", ex.Message);
 			return null;
         }
 		var body = await response.Content.ReadAsStringAsync();
-		//Console.WriteLine("after get decisions");
-		//Console.WriteLine("Raw body: {0}", body);
+		Logger.Trace("LAPI response: {0}", body);
 		var decisions = JsonConvert.DeserializeObject<DecisionStreamResponse>(body);
-		//Console.WriteLine("after decode : {0}", decisions.New);
 		if (decisions.New == null) 
 		{
 			decisions.New = new List<Decision>();
@@ -75,16 +75,7 @@ public class ApiClient
 		{
 			decisions.Deleted = new List<Decision>();
 		}
-		Console.WriteLine("Got {0} IP to delete, {1} to add", decisions.Deleted.Count, decisions.New.Count);
-
-		/*foreach (var decision in decisions.New)
-		{
-			Console.WriteLine("Decision: {0}", decision.value);
-		}
-		foreach (var decision in decisions.Deleted)
-		{
-			Console.WriteLine("Decision: {0}", decision.value);
-		}*/
+		Logger.Info("Got {0} IP to delete, {1} to add", decisions.Deleted.Count, decisions.New.Count);
 		return decisions;
     }
 }

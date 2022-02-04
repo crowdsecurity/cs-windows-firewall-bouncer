@@ -9,6 +9,9 @@ public class Config
 	public string ApiKey { get; set; }
 	public string LogLevel { get; set; }
 	public string UpdateFrequency { get; set; }
+	public string LogMedia { get; set; }
+	public string LogDir { get; set; }
+
 
 }
 
