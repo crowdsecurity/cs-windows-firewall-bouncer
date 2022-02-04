@@ -101,7 +101,7 @@ public class Firewall
 		}
 		catch (Exception ex)
         {
-			Logger.Error("Could not find rule {0}: {1}", name, ex.Message);
+			Logger.Debug("Could not find rule {0}: {1}", name, ex.Message);
         }
 		return null;
 	}
