@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp6.0</TargetFramework>
     <RootNamespace>cs_windows_firewall_bouncer</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
