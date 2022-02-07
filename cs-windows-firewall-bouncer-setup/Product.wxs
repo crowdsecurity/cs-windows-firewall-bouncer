@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?if $(sys.BUILDARCH)="x86"?>
+<?define Program_Files="ProgramFilesFolder"?>
+<?elseif $(sys.BUILDARCH)="x64"?>
+<?define Program_Files="ProgramFiles64Folder"?>
+<?else?>
+<?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
+<?endif?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?define cs-windows-firewall-bouncer_TargetDir=$(var.cs-windows-firewall-bouncer.TargetDir)?>
+  <Product Id="*" Name="CrowdSec Windows Firewall Bouncer" Language="1033" Version="1.0.0.0" Manufacturer="CrowdSecurity" UpgradeCode="bb1f577d-4045-4334-a56b-94a35608e8c6">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="CrowdSec Windows Firewall Bouncer" Level="1">
+      <ComponentRef Id="bouncerexe_service_start" />
+      <ComponentRef Id="bouncerexe_service_dont_start" />
+      <ComponentRef Id="fwbouncerother" />
+    </Feature>
+
+    <Property Id="CSCLIPRESENT">
+        <DirectorySearch Id='csclidirectory' Path="C:\Program Files\CrowdSec\" AssignToProperty='yes'>
+          <FileSearch Id='cscli' Name='cscli.exe' />
+        </DirectorySearch>
+    </Property>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.Program_Files)">
+        <Directory Id="CrowdsecFolder" Name="CrowdSec">
+          <Directory Id="bouncers" Name="bouncers">
+            <Directory Id="FirewallBouncerDir" Name="cs-windows-firewall-bouncer">
+              <Component Id="bouncerexe_service_start" Guid="9a947d13-9b3b-4afe-a3ef-22f933ea749e">
+                <File Id="bouncer.exe" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.exe" Name="cs-windows-firewall-bouncer.exe" />
+                <Condition>CSCLIPRESENT</Condition>
+                <ServiceInstall Id="BouncerService" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="auto" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
+                <ServiceControl Id="BouncerService" Name="cs-windows-firewall-bouncer" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+              </Component>
+              <Component Id="bouncerexe_service_dont_start" Guid="4510eb0d-b255-4a88-92a2-4355ec392f93">
+                <File Id="bouncer2.exe" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.exe" Name="cs-windows-firewall-bouncer.exe" />
+                <Condition>NOT CSCLIPRESENT</Condition>
+                <ServiceInstall Id="BouncerService2" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="disabled" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
+                <ServiceControl Id="BouncerService2" Name="cs-windows-firewall-bouncer" Stop="both" Remove="uninstall" Wait="yes" />
+              </Component>
+              <Component Id="fwbouncerother" Guid="4b650a10-7531-4569-ba49-0867ddadf482">
+                <File Id="bouncer.yaml" Source="$(var.cs-windows-firewall-bouncer.ProjectDir)\config\cs-windows-firewall-bouncer.yaml" Name="cs-windows-firewall-bouncer.yaml" />
+                <File Id="nlog.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\NLog.dll" Name="NLog.dll" />
+                <File Id="json.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" />
+                <File Id="fw.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\Interop.NetFwTypeLib.dll" Name="Interop.NetFwTypeLib.dll" />
+                <File Id="yaml.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\YamlDotNet.dll" Name="YamlDotNet.dll" />
+                <File Id="commandline.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\CommandLine.dll" Name="CommandLine.dll" />
+                <File Id="bouncer.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.dll" Name="cs-windows-firewall-bouncer.dll" />
+                <File Id="runtimeconfig.json" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.runtimeconfig.json" Name="cs-windows-firewall-bouncer.runtimeconfig.json" />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <!--<SetProperty Id="BouncerRegister" Value="&quot;C:\Program Files\CrowdSec\cscli.exe&quot; bouncers add windows-fw-bouncer" Sequence="execute" After="InstallFiles" />
+    <CustomAction Id="BouncerRegister" BinaryKey="WixCA" DllEntry="WixQuietExec" Execute="deferred" Return="check" Impersonate="no" />
+
+    <InstallExecuteSequence>
+      <WriteEnvironmentStrings />
+      <Custom Action="BouncerRegister" After="InstallFiles">NOT Installed AND NOT REMOVE AND CSCLIPRESENT</Custom>
+    </InstallExecuteSequence>-->
+
+    <Property Id="MsiLogging" Value="voicewarmupx!" />
+
+    <UI Id="WixUI_HK">
+      <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
+
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+      <Property Id="WixUI_Mode" Value="InstallDir" />
+
+      <DialogRef Id="BrowseDlg" />
+      <DialogRef Id="DiskCostDlg" />
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="ResumeDlg" />
+      <DialogRef Id="UserExit" />
+
+
+      <Publish Dialog="BrowseDlg" Control="OK" Event="DoAction" Value="WixUIValidatePath" Order="3">1</Publish>
+      <Publish Dialog="BrowseDlg" Control="OK" Event="SpawnDialog" Value="InvalidDirDlg" Order="4"><![CDATA[WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+
+      <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
+
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg"></Publish>
+
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="2">Installed</Publish>
+
+      <Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="MaintenanceTypeDlg">1</Publish>
+
+      <Publish Dialog="MaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+      <Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
+
+      <!--<ProgressText Action="HubUpdate">Updating Hub content</ProgressText>
+      <ProgressText Action="InstallWinCollection">Installing Windows collection</ProgressText>
+      <ProgressText Action="RegisterMachine">Registering agent to local API</ProgressText>
+      <ProgressText Action="RegisterCAPI">Registering to Crowdsec central API</ProgressText>-->
+
+    </UI>
+    <UIRef Id="WixUI_Common" />
+  </Product>
+</Wix>

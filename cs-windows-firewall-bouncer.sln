@@ -5,22 +5,32 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cs-windows-firewall-bouncer", "cs-windows-firewall-bouncer\cs-windows-firewall-bouncer.csproj", "{8C332187-C5A7-4159-970C-1F5DA47B9BEB}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "cs-windows-firewall-bouncer-setup", "cs-windows-firewall-bouncer-setup\cs-windows-firewall-bouncer-setup.wixproj", "{20ADEBD9-C295-4E7D-9C16-1A2E25843C32}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "cs-windows-firewall-bouncer-setup", "cs-windows-firewall-bouncer-setup\cs-windows-firewall-bouncer-setup.wixproj", "{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Debug|x64.ActiveCfg = Debug|x64
 		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Debug|x64.Build.0 = Debug|x64
+		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Debug|x86.ActiveCfg = Debug|x64
+		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Debug|x86.Build.0 = Debug|x64
 		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Release|x64.ActiveCfg = Release|x64
 		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Release|x64.Build.0 = Release|x64
-		{20ADEBD9-C295-4E7D-9C16-1A2E25843C32}.Debug|x64.ActiveCfg = Debug|x64
-		{20ADEBD9-C295-4E7D-9C16-1A2E25843C32}.Debug|x64.Build.0 = Debug|x64
-		{20ADEBD9-C295-4E7D-9C16-1A2E25843C32}.Release|x64.ActiveCfg = Release|x64
-		{20ADEBD9-C295-4E7D-9C16-1A2E25843C32}.Release|x64.Build.0 = Release|x64
+		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Release|x86.ActiveCfg = Release|x64
+		{8C332187-C5A7-4159-970C-1F5DA47B9BEB}.Release|x86.Build.0 = Release|x64
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Debug|x64.ActiveCfg = Debug|x86
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Debug|x64.Build.0 = Debug|x86
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Debug|x86.ActiveCfg = Debug|x86
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Debug|x86.Build.0 = Debug|x86
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Release|x64.ActiveCfg = Release|x64
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Release|x64.Build.0 = Release|x64
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Release|x86.ActiveCfg = Release|x86
+		{F0756F17-BF0D-4C46-8DE5-4EE4A6AEEAFE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
