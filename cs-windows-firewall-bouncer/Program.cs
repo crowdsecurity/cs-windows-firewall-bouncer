@@ -86,7 +86,7 @@ namespace cs_windows_firewall_bouncer
             {
                 if (config.config.LogDir == "")
                 {
-                    config.config.LogDir = "C:\\ProgramData\\CrowdSec\\logs";
+                    config.config.LogDir = "C:\\ProgramData\\CrowdSec\\log";
                 }
                 var logfile = new NLog.Targets.FileTarget("logfile") { FileName = System.IO.Path.Combine(config.config.LogDir, "cs_windows_firewall_bouncer.log")  };
                 loggerConfig.AddRule(logLevel, NLog.LogLevel.Fatal, logfile);
