@@ -23,8 +23,8 @@ jobs:
           uses: microsoft/setup-msbuild@v1.1
           with:
             msbuild-architecture: x64
-        - name: Restore deps
-          run: dotnet restore
+        #- name: Restore deps
+        #  run: dotnet restore
         - name: Build release bouncer
           run: "msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:rebuild -property:Configuration=Release"
         - name: Upload MSI
