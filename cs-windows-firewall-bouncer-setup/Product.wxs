@@ -37,14 +37,14 @@
               <Component Id="bouncerexe_service_start" Guid="9a947d13-9b3b-4afe-a3ef-22f933ea749e">
                 <File Id="bouncer.exe" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.exe" Name="cs-windows-firewall-bouncer.exe" />
                 <Condition>CSCLIPRESENT</Condition>
-                <ServiceInstall Id="BouncerService" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="auto" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
-                <ServiceControl Id="BouncerService" Name="cs-windows-firewall-bouncer" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+                <ServiceInstall Id="BouncerService" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="demand" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
+                <!--<ServiceControl Id="BouncerService" Name="cs-windows-firewall-bouncer" Start="install" Stop="both" Remove="uninstall" Wait="no" />-->
               </Component>
               <Component Id="bouncerexe_service_dont_start" Guid="4510eb0d-b255-4a88-92a2-4355ec392f93">
                 <File Id="bouncer2.exe" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.exe" Name="cs-windows-firewall-bouncer.exe" />
                 <Condition>NOT CSCLIPRESENT</Condition>
                 <ServiceInstall Id="BouncerService2" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="disabled" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
-                <ServiceControl Id="BouncerService2" Name="cs-windows-firewall-bouncer" Stop="both" Remove="uninstall" Wait="yes" />
+                <ServiceControl Id="BouncerService2" Name="cs-windows-firewall-bouncer" Stop="both" Remove="uninstall" Wait="no" />
               </Component>
               <Component Id="fwbouncerother" Guid="4b650a10-7531-4569-ba49-0867ddadf482">
                 <File Id="bouncer.yaml" Source="$(var.cs-windows-firewall-bouncer.ProjectDir)\config\cs-windows-firewall-bouncer.yaml" Name="cs-windows-firewall-bouncer.yaml" />
@@ -54,6 +54,9 @@
                 <File Id="yaml.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\YamlDotNet.dll" Name="YamlDotNet.dll" />
                 <File Id="commandline.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\CommandLine.dll" Name="CommandLine.dll" />
                 <File Id="bouncer.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.dll" Name="cs-windows-firewall-bouncer.dll" />
+                <File Id="service.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\runtimes\win\lib\net6.0\System.ServiceProcess.ServiceController.dll" Name="System.ServiceProcess.ServiceController.dll" />
+                <File Id="eventlog.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\runtimes\win\lib\net6.0\System.Diagnostics.EventLog.dll" Name="System.Diagnostics.EventLog.dll" />
+                <File Id="eventlog_message.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\runtimes\win\lib\net6.0\System.Diagnostics.EventLog.Messages.dll" Name="System.Diagnostics.EventLog.Messages.dll" />
                 <File Id="runtimeconfig.json" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.runtimeconfig.json" Name="cs-windows-firewall-bouncer.runtimeconfig.json" />
               </Component>
             </Directory>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ServiceProcess;
 using System.Threading.Tasks;
 using CommandLine;
 
@@ -112,20 +113,40 @@ namespace cs_windows_firewall_bouncer
                 return;
             }
             
-            NLog.LogManager.Configuration = loggerConfig; 
+            NLog.LogManager.Configuration = loggerConfig;
+
+
+            NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
 
             if (opts.RemoveAll)
             {
                 Firewall firewall = new();
-                Console.WriteLine("Deleting all firewall rules.");
+                Logger.Info("Deleting all firewall rules.");
                 firewall.DeleteAllRules();
-                Console.WriteLine("Done deleting all firewall rules.");
+                Logger.Info("Done deleting all firewall rules.");
                 return;
             }
 
-            DecisionsManager mgr = new(config);
-
-            await mgr.Run();
+            if (!Environment.UserInteractive)
+            {
+                //Running in a service
+                Logger.Info("Running in service mode");
+                try
+                {
+                    ServiceBase.Run(new Service(config));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Exception while starting service: {0}", ex.Message);
+                }
+            }
+            else
+            {
+                Logger.Info("Running in interactive mode");
+                DecisionsManager mgr = new(config);
+                await mgr.Run();
+            }
         }
     }
 }
