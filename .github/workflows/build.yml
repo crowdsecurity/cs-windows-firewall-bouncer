@@ -7,6 +7,10 @@ jobs:
       steps:
         - name: checkout repo 
           uses: actions/checkout@v2
+        - name: setup dotnet 
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: '6.0.x'
         - name: show env
           run: "gci env:"
         - name: show workspace
@@ -19,8 +23,10 @@ jobs:
           uses: microsoft/setup-msbuild@v1.1
           with:
             msbuild-architecture: x64
+        - name: Restore deps
+          run: dotnet restore
         - name: Build release bouncer
-          run: "msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:rebuild -verbosity:diag -property:Configuration=Release"
+          run: "msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:rebuild -property:Configuration=Release"
         - name: Upload MSI
           uses: actions/upload-artifact@v2
           with:
