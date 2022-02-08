@@ -5,6 +5,8 @@ jobs:
     build:
       runs-on: windows-latest
       steps:
+        - name: show env
+          run: "gci env:"
         - name: show workspace
           run: "echo $GITHUB_WORKSPACE"
         - name: show location
