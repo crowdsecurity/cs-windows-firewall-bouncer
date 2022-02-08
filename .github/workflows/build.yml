@@ -1,0 +1,15 @@
+name: Build
+on:
+    - push
+jobs:
+    build:
+      runs-on: windows-latest
+      steps:
+        - name: Add msbuild to PATH
+          uses: microsoft/setup-msbuild@v1.1
+        - name: Build release bouncer
+          run: msbuild cs-windows-firewall-bouncer.sln -t:rebuild -verbosity:diag -property:Configuration=Release
+        - name: Upload MSI
+          uses: actions/upload-artifact@v2
+          path: cs-windows-firewall-bouncer/cs-windows-firewall-bouncer-setup/bin/x64/Release/cs_windows_firewall_bouncer_setup.msi
+          name: cs_windows_firewall_bouncer.msi
