@@ -23,6 +23,7 @@ jobs:
           uses: microsoft/setup-msbuild@v1.1
           with:
             msbuild-architecture: x64
+        - run: "nuget restore ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln"
         #- name: Restore deps
         #  run: dotnet restore
         - name: Build release bouncer
