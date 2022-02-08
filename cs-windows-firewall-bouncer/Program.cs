@@ -39,10 +39,20 @@ namespace cs_windows_firewall_bouncer
             }
         }
 
+        protected static void consoleHandler(object sender, ConsoleCancelEventArgs args)
+        {
+            Firewall firewall = new();
+            Console.WriteLine("Deleting all firewall rules.");
+            firewall.DeleteAllRules();
+            Console.WriteLine("Done deleting all firewall rules.");
+        }
+
         static async Task Main(string[] args)
         {
             BouncerConfig config;
             Options opts;
+
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(consoleHandler);
 
             var result = Parser.Default.ParseArguments<Options>(args).WithNotParsed(errors =>
             {
