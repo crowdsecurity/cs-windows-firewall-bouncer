@@ -5,6 +5,8 @@ jobs:
     build:
       runs-on: windows-latest
       steps:
+        - name: Run ls
+          run: ls
         - name: Add msbuild to PATH
           uses: microsoft/setup-msbuild@v1.1
         - name: Build release bouncer
