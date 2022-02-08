@@ -31,5 +31,5 @@ jobs:
         - name: Upload MSI
           uses: actions/upload-artifact@v2
           with:
-            path: "${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi"
+            path: "cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi"
             name: cs_windows_firewall_bouncer.msi
