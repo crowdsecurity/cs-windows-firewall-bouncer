@@ -12,7 +12,7 @@ jobs:
         - name: show location
           run: "Get-Location"
         - name: Run ls
-          run:  Get-ChildItem
+          run:  Get-ChildItem ..
         - name: Add msbuild to PATH
           uses: microsoft/setup-msbuild@v1.1
           with:
