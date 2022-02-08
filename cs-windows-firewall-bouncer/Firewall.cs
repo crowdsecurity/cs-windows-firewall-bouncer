@@ -5,206 +5,206 @@ using System.Collections.Generic;
 
 public class FirewallRule
 {
-	public int Capacity { get; } = 1000;
-	public int Length { get; set; }
-	private List<string> content = new();
-	private string ruleName;
-	public FirewallRule()
+    public int Capacity { get; } = 1000;
+    public int Length { get; set; }
+    private List<string> content = new();
+    private string ruleName;
+    public FirewallRule()
     {
-		ruleName = "crowdsec-blocklist" + Guid.NewGuid().ToString();
-	}
-
-	public override string ToString()
-    {
-		return string.Join(",", content);
+        ruleName = "crowdsec-blocklist" + Guid.NewGuid().ToString();
     }
 
-	public void AddIP(string ip)
+    public override string ToString()
     {
-		content.Add(ip);
-		Length++;
+        return string.Join(",", content);
     }
-	public bool RemoveIP(string ip)
+
+    public void AddIP(string ip)
     {
-		var r = content.Remove(ip);
-		if (r)
+        content.Add(ip);
+        Length++;
+    }
+    public bool RemoveIP(string ip)
+    {
+        var r = content.Remove(ip);
+        if (r)
         {
-			Length--;
+            Length--;
         }
-		return r;
+        return r;
     }
 
-	public bool HasIp(string ip)
+    public bool HasIp(string ip)
     {
-		return content.Contains(ip);
+        return content.Contains(ip);
     }
 
-	public string GetName()
+    public string GetName()
     {
-		return ruleName;
+        return ruleName;
     }
 }
 
 public class Firewall
 {
-	private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+    private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-	private INetFwMgr fwManager;
-	private INetFwPolicy2 policy;
-	private List<FirewallRule> rulesBucket = new();
+    private INetFwMgr fwManager;
+    private INetFwPolicy2 policy;
+    private List<FirewallRule> rulesBucket = new();
 
 
-	public Firewall()
-	{
+    public Firewall()
+    {
         fwManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
-		policy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
-		DeleteAllRules();
-		//rules.Add(new FirewallRule());
-		//CurrentProfileTypes
-	}
-
-	public bool IsEnabled()
-    {
-		return fwManager.LocalPolicy.CurrentProfile.FirewallEnabled;
-	}
-
-	public string GetCurrentProfile()
-    {
-		return policy.CurrentProfileTypes.ToString();
+        policy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+        DeleteAllRules();
+        //rules.Add(new FirewallRule());
+        //CurrentProfileTypes
     }
 
-	public void DeleteRule(string name)
+    public bool IsEnabled()
     {
-		Logger.Info("Deleting FW rule");
-		policy.Rules.Remove(name);
+        return fwManager.LocalPolicy.CurrentProfile.FirewallEnabled;
     }
 
-	public void DeleteAllRules()
+    public string GetCurrentProfile()
     {
-		foreach (INetFwRule rule in policy.Rules)
+        return policy.CurrentProfileTypes.ToString();
+    }
+
+    public void DeleteRule(string name)
+    {
+        Logger.Info("Deleting FW rule");
+        policy.Rules.Remove(name);
+    }
+
+    public void DeleteAllRules()
+    {
+        foreach (INetFwRule rule in policy.Rules)
         {
-			if (rule.Name.StartsWith("crowdsec-blocklist"))
+            if (rule.Name.StartsWith("crowdsec-blocklist"))
             {
-				Logger.Debug("Deleting rule {0}", rule.Name);
-				policy.Rules.Remove(rule.Name);
+                Logger.Debug("Deleting rule {0}", rule.Name);
+                policy.Rules.Remove(rule.Name);
             }
         }
     }
 
-	private INetFwRule getRule(string name)
+    private INetFwRule getRule(string name)
     {
-		INetFwRule rule;
-		try
+        INetFwRule rule;
+        try
         {
-			rule = policy.Rules.Item(name);
-			return rule;
-		}
-		catch (Exception ex)
-        {
-			Logger.Debug("Could not find rule {0}: {1}", name, ex.Message);
+            rule = policy.Rules.Item(name);
+            return rule;
         }
-		return null;
-	}
-
-	public bool RuleExists(string name)
-    {
-		return getRule(name) != null;
+        catch (Exception ex)
+        {
+            Logger.Debug("Could not find rule {0}: {1}", name, ex.Message);
+        }
+        return null;
     }
 
-	public bool RuleIsEnabled(string name)
+    public bool RuleExists(string name)
     {
-		var rule = getRule(name);
-		
-		if (rule != null)
-        {
-			return rule.Enabled;
-        }
-		return false;
-	}
-
-	private FirewallRule findBucketForIp(string ip)
-    {
-		foreach (FirewallRule rule in rulesBucket)
-        {
-			if (rule.HasIp(ip))
-            {
-				return rule;
-            }
-        }
-		return null;
+        return getRule(name) != null;
     }
 
-	private FirewallRule findAvailableBucket()
+    public bool RuleIsEnabled(string name)
     {
-		foreach (var rule in rulesBucket)
+        var rule = getRule(name);
+
+        if (rule != null)
         {
-			if (rule.Length < rule.Capacity)
+            return rule.Enabled;
+        }
+        return false;
+    }
+
+    private FirewallRule findBucketForIp(string ip)
+    {
+        foreach (FirewallRule rule in rulesBucket)
+        {
+            if (rule.HasIp(ip))
             {
-				return rule;
+                return rule;
             }
         }
-		var newRule = new FirewallRule();
-		CreateRule(newRule.GetName());
-		rulesBucket.Add(newRule);
-		return newRule;
+        return null;
+    }
+
+    private FirewallRule findAvailableBucket()
+    {
+        foreach (var rule in rulesBucket)
+        {
+            if (rule.Length < rule.Capacity)
+            {
+                return rule;
+            }
+        }
+        var newRule = new FirewallRule();
+        CreateRule(newRule.GetName());
+        rulesBucket.Add(newRule);
+        return newRule;
     }
 
 
-	public void UpdateRule(DecisionStreamResponse decisions)
+    public void UpdateRule(DecisionStreamResponse decisions)
     {
-		foreach (var decision in decisions.Deleted)
+        foreach (var decision in decisions.Deleted)
         {
-			var bucket = findBucketForIp(decision.value);
-			if (bucket == null)
+            var bucket = findBucketForIp(decision.value);
+            if (bucket == null)
             {
-				continue;
+                continue;
             }
-			bucket.RemoveIP(decision.value);
+            bucket.RemoveIP(decision.value);
         }
 
-		foreach (var decision in decisions.New)
+        foreach (var decision in decisions.New)
         {
-			var bucket = findAvailableBucket();
-			bucket.AddIP(decision.value);
+            var bucket = findAvailableBucket();
+            bucket.AddIP(decision.value);
         }
 
-		List<FirewallRule> toDelete = new();
-		foreach (var rule in rulesBucket)
+        List<FirewallRule> toDelete = new();
+        foreach (var rule in rulesBucket)
         {
-			var fwRule = getRule(rule.GetName());
-			var content = rule.ToString();
-			if (content.Length == 0)
-			{
-				Logger.Debug("Adding bucket {0} to delete list", rule.GetName());
-				toDelete.Add(rule);
-				DeleteRule(rule.GetName());
-			}
-			else
-			{
-				fwRule.RemoteAddresses = content;
-				fwRule.Enabled = true;
-			}
-		}
-		foreach (var fwRule in toDelete)
+            var fwRule = getRule(rule.GetName());
+            var content = rule.ToString();
+            if (content.Length == 0)
+            {
+                Logger.Debug("Adding bucket {0} to delete list", rule.GetName());
+                toDelete.Add(rule);
+                DeleteRule(rule.GetName());
+            }
+            else
+            {
+                fwRule.RemoteAddresses = content;
+                fwRule.Enabled = true;
+            }
+        }
+        foreach (var fwRule in toDelete)
         {
-			rulesBucket.Remove(fwRule);
-		}
-	}
+            rulesBucket.Remove(fwRule);
+        }
+    }
 
-	public void CreateRule(string name)
+    public void CreateRule(string name)
     {
-		if (RuleExists(name))
+        if (RuleExists(name))
         {
-			Logger.Debug("Rule {0} already exists, not doing anything", name);
-			return;
+            Logger.Debug("Rule {0} already exists, not doing anything", name);
+            return;
         }
-		Logger.Debug("Creating FW rule");
-		INetFwRule2 rule = (INetFwRule2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwRule"));
-		rule.Name = name;
-		rule.Description = "CrowdSec Managed rule";
-		rule.Enabled = false;
-		rule.Profiles = policy.CurrentProfileTypes;
-		rule.Action = NET_FW_ACTION_.NET_FW_ACTION_BLOCK;
-		policy.Rules.Add(rule);
-	}
+        Logger.Debug("Creating FW rule");
+        INetFwRule2 rule = (INetFwRule2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwRule"));
+        rule.Name = name;
+        rule.Description = "CrowdSec Managed rule";
+        rule.Enabled = false;
+        rule.Profiles = policy.CurrentProfileTypes;
+        rule.Action = NET_FW_ACTION_.NET_FW_ACTION_BLOCK;
+        policy.Rules.Add(rule);
+    }
 }

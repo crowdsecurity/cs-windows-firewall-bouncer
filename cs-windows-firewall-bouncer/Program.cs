@@ -99,7 +99,7 @@ namespace cs_windows_firewall_bouncer
                 {
                     config.config.LogDir = "C:\\ProgramData\\CrowdSec\\log";
                 }
-                var logfile = new NLog.Targets.FileTarget("logfile") { FileName = System.IO.Path.Combine(config.config.LogDir, "cs_windows_firewall_bouncer.log")  };
+                var logfile = new NLog.Targets.FileTarget("logfile") { FileName = System.IO.Path.Combine(config.config.LogDir, "cs_windows_firewall_bouncer.log") };
                 loggerConfig.AddRule(logLevel, NLog.LogLevel.Fatal, logfile);
             }
             else if (config.config.LogMedia == "console")
@@ -112,7 +112,7 @@ namespace cs_windows_firewall_bouncer
                 Console.WriteLine("Unknown value for log_media: {0}", config.config.LogMedia);
                 return;
             }
-            
+
             NLog.LogManager.Configuration = loggerConfig;
 
 
