@@ -6,7 +6,7 @@ jobs:
       runs-on: windows-latest
       steps:
         - name: Run ls
-          run: ls
+          run:  Get-ChildItem
         - name: Add msbuild to PATH
           uses: microsoft/setup-msbuild@v1.1
           with:
