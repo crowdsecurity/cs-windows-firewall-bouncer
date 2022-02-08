@@ -5,6 +5,8 @@ jobs:
     build:
       runs-on: windows-latest
       steps:
+        - name: checkout repo 
+          uses: actions/checkout@v2
         - name: show env
           run: "gci env:"
         - name: show workspace
@@ -12,7 +14,7 @@ jobs:
         - name: show location
           run: "Get-Location"
         - name: Run ls
-          run:  Get-ChildItem ..
+          run:  Get-ChildItem
         - name: Add msbuild to PATH
           uses: microsoft/setup-msbuild@v1.1
           with:
