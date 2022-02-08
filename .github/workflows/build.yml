@@ -8,7 +8,7 @@ jobs:
         - name: show env
           run: "gci env:"
         - name: show workspace
-          run: "echo $GITHUB_WORKSPACE"
+          run: "echo %GITHUB_WORKSPACE%"
         - name: show location
           run: "Get-Location"
         - name: Run ls
@@ -18,9 +18,9 @@ jobs:
           with:
             msbuild-architecture: x64
         - name: Build release bouncer
-          run: "msbuild $GITHUB_WORKSPACE\\cs-windows-firewall-bouncer.sln -t:rebuild -verbosity:diag -property:Configuration=Release"
+          run: "msbuild %GITHUB_WORKSPACE%\\cs-windows-firewall-bouncer.sln -t:rebuild -verbosity:diag -property:Configuration=Release"
         - name: Upload MSI
           uses: actions/upload-artifact@v2
           with:
-            path: "$GITHUB_WORKSPACE\\cs-windows-firewall-bouncer\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi"
+            path: "%GITHUB_WORKSPACE%\\cs-windows-firewall-bouncer\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi"
             name: cs_windows_firewall_bouncer.msi
