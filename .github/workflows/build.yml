@@ -9,6 +9,8 @@ jobs:
           run: ls
         - name: Add msbuild to PATH
           uses: microsoft/setup-msbuild@v1.1
+          with:
+            msbuild-architecture: x64
         - name: Build release bouncer
           run: msbuild cs-windows-firewall-bouncer.sln -t:rebuild -verbosity:diag -property:Configuration=Release
         - name: Upload MSI
