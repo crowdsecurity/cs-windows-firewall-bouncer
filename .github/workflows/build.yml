@@ -11,21 +11,11 @@ jobs:
           uses: actions/setup-dotnet@v1
           with:
             dotnet-version: '6.0.x'
-        - name: show env
-          run: "gci env:"
-        - name: show workspace
-          run: "echo ${env:GITHUB_WORKSPACE}"
-        - name: show location
-          run: "Get-Location"
-        - name: Run ls
-          run:  Get-ChildItem
         - name: Add msbuild to PATH
           uses: microsoft/setup-msbuild@v1.1
           with:
             msbuild-architecture: x64
         - run: "nuget restore ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln"
-        #- name: Restore deps
-        #  run: dotnet restore
         - name: Build release bouncer
           run: "msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:rebuild -property:Configuration=Release"
         - name: Upload MSI
