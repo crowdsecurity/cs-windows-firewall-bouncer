@@ -37,8 +37,8 @@
               <Component Id="bouncerexe_service_start" Guid="9a947d13-9b3b-4afe-a3ef-22f933ea749e">
                 <File Id="bouncer.exe" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.exe" Name="cs-windows-firewall-bouncer.exe" />
                 <Condition>CSCLIPRESENT</Condition>
-                <ServiceInstall Id="BouncerService" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="demand" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
-                <!--<ServiceControl Id="BouncerService" Name="cs-windows-firewall-bouncer" Start="install" Stop="both" Remove="uninstall" Wait="no" />-->
+                <ServiceInstall Id="BouncerService" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="auto" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
+                <ServiceControl Id="BouncerService" Name="cs-windows-firewall-bouncer" Start="install" Stop="both" Remove="uninstall" Wait="no" />
               </Component>
               <Component Id="bouncerexe_service_dont_start" Guid="4510eb0d-b255-4a88-92a2-4355ec392f93">
                 <File Id="bouncer2.exe" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.exe" Name="cs-windows-firewall-bouncer.exe" />
@@ -65,13 +65,13 @@
       </Directory>
     </Directory>
 
-    <!--<SetProperty Id="BouncerRegister" Value="&quot;C:\Program Files\CrowdSec\cscli.exe&quot; bouncers add windows-fw-bouncer" Sequence="execute" After="InstallFiles" />
-    <CustomAction Id="BouncerRegister" BinaryKey="WixCA" DllEntry="WixQuietExec" Execute="deferred" Return="check" Impersonate="no" />
-
+    <CustomAction Id="RegisterBouncer" BinaryKey="RegisterBouncer.CA" DllEntry="RegisterBouncer" Execute="deferred" Return="check" Impersonate="no" />
+    <Property Id="RegisterBouncer" Value="bouncerPrefix=windows-firewall-bouncer-;bouncerConfigPath=C:\Program Files\CrowdSec\bouncers\cs-windows-firewall-bouncer\cs-windows-firewall-bouncer.yaml" />
+    <Binary Id="RegisterBouncer.CA" SourceFile="..\bouncer-register-custom-action\bin\x64\Release\bouncer-register-custom-action.CA.dll" />
+    
     <InstallExecuteSequence>
-      <WriteEnvironmentStrings />
-      <Custom Action="BouncerRegister" After="InstallFiles">NOT Installed AND NOT REMOVE AND CSCLIPRESENT</Custom>
-    </InstallExecuteSequence>-->
+      <Custom Action="RegisterBouncer" After="InstallFiles">NOT Installed AND NOT REMOVE AND CSCLIPRESENT</Custom>
+    </InstallExecuteSequence>
 
     <Property Id="MsiLogging" Value="voicewarmupx!" />
 
