@@ -117,5 +117,9 @@
 
     </UI>
     <UIRef Id="WixUI_Common" />
+    <WixVariable Id="WixUIDialogBmp" Value="bmp\installer_dialog.bmp" />
+    <WixVariable Id="WixUIBannerBmp" Value="bmp\crowdsec_msi_top_banner.bmp" />
+    <Icon Id="icon.ico" SourceFile="bmp\crowdsec_icon.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
   </Product>
 </Wix>
