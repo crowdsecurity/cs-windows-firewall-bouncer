@@ -9,9 +9,14 @@ public class FirewallRule
     public int Length { get; set; }
     private List<string> content = new();
     private string ruleName;
+    private bool stale;
+
+    private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
     public FirewallRule()
     {
         ruleName = "crowdsec-blocklist" + Guid.NewGuid().ToString();
+        stale = false;
     }
 
     public override string ToString()
@@ -23,13 +28,16 @@ public class FirewallRule
     {
         content.Add(ip);
         Length++;
+        stale = true;
     }
     public bool RemoveIP(string ip)
     {
+        Logger.Trace("Removing IP {0} from rule {1}", ip, ruleName);
         var r = content.Remove(ip);
         if (r)
         {
             Length--;
+            stale = false;
         }
         return r;
     }
@@ -42,6 +50,15 @@ public class FirewallRule
     public string GetName()
     {
         return ruleName;
+    }
+
+    public bool IsStale()
+    {
+        return stale;
+    }
+    public void SetStale(bool s)
+    {
+        stale = s;
     }
 }
 
@@ -75,7 +92,7 @@ public class Firewall
 
     public void DeleteRule(string name)
     {
-        Logger.Info("Deleting FW rule");
+        Logger.Info("Deleting FW rule {0}", name);
         policy.Rules.Remove(name);
     }
 
@@ -93,6 +110,7 @@ public class Firewall
 
     private INetFwRule getRule(string name)
     {
+        Logger.Trace("in get rule for {0}", name);
         INetFwRule rule;
         try
         {
@@ -113,6 +131,7 @@ public class Firewall
 
     public bool RuleIsEnabled(string name)
     {
+        Logger.Trace("checking if rule {0} is enabled");
         var rule = getRule(name);
 
         if (rule != null)
@@ -124,6 +143,7 @@ public class Firewall
 
     private FirewallRule findBucketForIp(string ip)
     {
+        Logger.Trace("Trying to find bucket for ip {0}", ip);
         foreach (FirewallRule rule in rulesBucket)
         {
             if (rule.HasIp(ip))
@@ -144,6 +164,7 @@ public class Firewall
             }
         }
         var newRule = new FirewallRule();
+        Logger.Info("Creating new rule {0}", newRule.GetName());
         CreateRule(newRule.GetName());
         rulesBucket.Add(newRule);
         return newRule;
@@ -171,8 +192,11 @@ public class Firewall
         List<FirewallRule> toDelete = new();
         foreach (var rule in rulesBucket)
         {
-            var fwRule = getRule(rule.GetName());
             var content = rule.ToString();
+            if (!rule.IsStale() && content.Length != 0)
+            {
+                continue;
+            }
             if (content.Length == 0)
             {
                 Logger.Debug("Adding bucket {0} to delete list", rule.GetName());
@@ -181,8 +205,10 @@ public class Firewall
             }
             else
             {
+                var fwRule = getRule(rule.GetName());
                 fwRule.RemoteAddresses = content;
                 fwRule.Enabled = true;
+                rule.SetStale(false);
             }
         }
         foreach (var fwRule in toDelete)

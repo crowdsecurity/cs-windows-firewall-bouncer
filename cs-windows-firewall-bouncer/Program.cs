@@ -15,8 +15,9 @@ namespace cs_windows_firewall_bouncer
             public bool RemoveAll { get; set; }
             [Option('d', "debug", Required = false, Default = false, HelpText = "Enable debug logging")]
             public bool Debug { get; set; }
-            //[Option('s', "service", Required = false, Default = "", HelpText = "Manage ")]
 
+            [Option('t', "trace", Required = false, Default = false, HelpText = "Enable trace logging")]
+            public bool Trace { get; set; }
         }
 
         static private NLog.LogLevel GetLogLevel(string name)
@@ -91,6 +92,11 @@ namespace cs_windows_firewall_bouncer
             if (opts.Debug)
             {
                 logLevel = NLog.LogLevel.Debug;
+            }
+
+            if (opts.Trace)
+            {
+                logLevel = NLog.LogLevel.Trace;
             }
 
             if (config.config.LogMedia == "file" || !Environment.UserInteractive)
