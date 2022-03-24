@@ -1,4 +1,0 @@
-api_endpoint: http://localhost:8081
-api_key: 3a7509970b611b9bd17ae5f8e48ba9a9
-update_frequency: 10
-log_media: console
