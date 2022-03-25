@@ -3,6 +3,10 @@ using System.ServiceProcess;
 using System.Threading.Tasks;
 using CommandLine;
 
+using Fw;
+using Cfg;
+using Manager;
+
 namespace cs_windows_firewall_bouncer
 {
     class Program

@@ -8,6 +8,10 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
+using Cfg;
+using Fw;
+using Manager;
+
 namespace cs_windows_firewall_bouncer
 {
     partial class Service : ServiceBase
@@ -29,7 +33,7 @@ namespace cs_windows_firewall_bouncer
         {
             Logger.Debug("Onstart service");
             mgr = new(config);
-            mgr.Run();
+            var _ = mgr.Run();
             base.OnStart(args);
             Logger.Debug("Onstart service end");
 

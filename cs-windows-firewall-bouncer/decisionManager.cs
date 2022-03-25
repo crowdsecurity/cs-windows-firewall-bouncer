@@ -1,51 +1,58 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-public class DecisionsManager
+using Api;
+using Cfg;
+using Fw;
+
+namespace Manager
 {
-    private readonly ApiClient apiClient;
-    private readonly Firewall firewall;
-    private readonly int interval;
-
-    private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-    public DecisionsManager(BouncerConfig config)
+    public class DecisionsManager
     {
-        apiClient = new(config.config.ApiKey, config.config.ApiEndpoint);
-        interval = config.config.UpdateFrequency;
-        if (interval <= 0)
-        {
-            interval = 10;
-        }
-        firewall = new Firewall();
+        private readonly ApiClient apiClient;
+        private readonly Firewall firewall;
+        private readonly int interval;
 
-        if (!firewall.IsEnabled())
+        private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+        public DecisionsManager(BouncerConfig config)
         {
-            throw new Exception("Firewall is not enabled for the current profile, the bouncer won't work.");
-        }
-        Logger.Debug("Firewall is enabled for profile {0}", firewall.GetCurrentProfile());
-    }
+            apiClient = new(config.config.ApiKey, config.config.ApiEndpoint);
+            interval = config.config.UpdateFrequency;
+            if (interval <= 0)
+            {
+                interval = 10;
+            }
+            firewall = new Firewall();
 
-    public async Task<bool> Run()
-    {
-        var decisions = await apiClient.GetDecisions(true);
-        if (decisions == null)
-        {
-            Logger.Error("Could not get initial decisions from LAPI.");
-            return false;
+            if (!firewall.IsEnabled())
+            {
+                throw new Exception("Firewall is not enabled for the current profile, the bouncer won't work.");
+            }
+            Logger.Debug("Firewall is enabled for profile {0}", firewall.GetCurrentProfile());
         }
-        firewall.UpdateRule(decisions);
-        var intervalms = this.interval * 1000;
-        while (true)
+
+        public async Task<bool> Run()
         {
-            decisions = await apiClient.GetDecisions(false);
+            var decisions = await apiClient.GetDecisions(true);
             if (decisions == null)
             {
-                Logger.Error("Could not get decisions from LAPI.");
-                Task.Delay(intervalms).Wait();
-                continue;
+                Logger.Error("Could not get initial decisions from LAPI.");
+                return false;
             }
             firewall.UpdateRule(decisions);
-            Task.Delay(intervalms).Wait();
+            var intervalms = this.interval * 1000;
+            while (true)
+            {
+                decisions = await apiClient.GetDecisions(false);
+                if (decisions == null)
+                {
+                    Logger.Error("Could not get decisions from LAPI.");
+                    Task.Delay(intervalms).Wait();
+                    continue;
+                }
+                firewall.UpdateRule(decisions);
+                Task.Delay(intervalms).Wait();
+            }
         }
     }
 }
