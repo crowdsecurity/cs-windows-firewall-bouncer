@@ -17,7 +17,7 @@ public class Config
 
 public class BouncerConfig
 {
-    private string configPath;
+    private readonly string configPath;
     public Config config { get; set; }
     public BouncerConfig(string configPath)
     {

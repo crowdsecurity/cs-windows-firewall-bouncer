@@ -31,8 +31,8 @@ public class DecisionStreamResponse
 public class ApiClient
 {
     private readonly HttpClient client = new HttpClient();
-    private string apiKey;
-    private string apiEndpoint;
+    private readonly string apiKey;
+    private readonly string apiEndpoint;
 
     private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     public ApiClient(string apiKey, string apiEndpoint)

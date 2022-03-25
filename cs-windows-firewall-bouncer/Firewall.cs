@@ -2,13 +2,15 @@
 using NetFwTypeLib;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Linq;
+
 
 public class FirewallRule
 {
     public int Capacity { get; } = 1000;
     public int Length { get; set; }
     private List<string> content = new();
-    private string ruleName;
+    private readonly string ruleName;
     private bool stale;
 
     private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
@@ -66,9 +68,9 @@ public class Firewall
 {
     private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-    private INetFwMgr fwManager;
-    private INetFwPolicy2 policy;
-    private List<FirewallRule> rulesBucket = new();
+    private readonly INetFwMgr fwManager;
+    private readonly INetFwPolicy2 policy;
+    private readonly List<FirewallRule> rulesBucket = new();
 
 
     public Firewall()
@@ -76,8 +78,6 @@ public class Firewall
         fwManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
         policy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
         DeleteAllRules();
-        //rules.Add(new FirewallRule());
-        //CurrentProfileTypes
     }
 
     public bool IsEnabled()
@@ -144,24 +144,15 @@ public class Firewall
     private FirewallRule findBucketForIp(string ip)
     {
         Logger.Trace("Trying to find bucket for ip {0}", ip);
-        foreach (FirewallRule rule in rulesBucket)
-        {
-            if (rule.HasIp(ip))
-            {
-                return rule;
-            }
-        }
-        return null;
+        return rulesBucket.FirstOrDefault(x => x.HasIp(ip));
     }
 
     private FirewallRule findAvailableBucket()
     {
-        foreach (var rule in rulesBucket)
+        var rule = rulesBucket.FirstOrDefault(x => x.Length < x.Capacity);
+        if (rule != null)
         {
-            if (rule.Length < rule.Capacity)
-            {
-                return rule;
-            }
+            return rule;
         }
         var newRule = new FirewallRule();
         Logger.Info("Creating new rule {0}", newRule.GetName());
