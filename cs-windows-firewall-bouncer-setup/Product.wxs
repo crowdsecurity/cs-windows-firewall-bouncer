@@ -72,17 +72,21 @@
     <InstallExecuteSequence>
       <Custom Action="RegisterBouncer" After="InstallFiles">NOT Installed AND NOT REMOVE AND CSCLIPRESENT</Custom>
     </InstallExecuteSequence>
-
+    
     <Property Id="MsiLogging" Value="voicewarmupx!" />
 
+    <SetProperty After="FindRelatedProducts" Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="cscli.exe was not found, please register the bouncer with CrowdSec manually and update the service to start on boot" >
+      <![CDATA[NOT CSCLIPRESENT]]>
+    </SetProperty>
+
     <UI Id="WixUI_HK">
+
       <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
       <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
       <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
 
       <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
       <Property Id="WixUI_Mode" Value="InstallDir" />
-
       <DialogRef Id="BrowseDlg" />
       <DialogRef Id="DiskCostDlg" />
       <DialogRef Id="ErrorDlg" />
@@ -109,11 +113,6 @@
       <Publish Dialog="MaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
       <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
       <Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
-
-      <!--<ProgressText Action="HubUpdate">Updating Hub content</ProgressText>
-      <ProgressText Action="InstallWinCollection">Installing Windows collection</ProgressText>
-      <ProgressText Action="RegisterMachine">Registering agent to local API</ProgressText>
-      <ProgressText Action="RegisterCAPI">Registering to Crowdsec central API</ProgressText>-->
 
     </UI>
     <UIRef Id="WixUI_Common" />
