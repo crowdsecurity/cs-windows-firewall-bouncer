@@ -10,7 +10,7 @@
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define cs-windows-firewall-bouncer_TargetDir=$(var.cs-windows-firewall-bouncer.TargetDir)?>
-  <Product Id="*" Name="CrowdSec Windows Firewall Bouncer" Language="1033" Version="1.0.0.0" Manufacturer="CrowdSecurity" UpgradeCode="bb1f577d-4045-4334-a56b-94a35608e8c6">
+  <Product Id="*" Name="CrowdSec Windows Firewall Bouncer" Language="1033" Version="0.0.1" Manufacturer="CrowdSecurity" UpgradeCode="bb1f577d-4045-4334-a56b-94a35608e8c6">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 
