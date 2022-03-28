@@ -60,3 +60,8 @@ jobs:
           with:
             path: "cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi"
             name: cs_windows_firewall_bouncer.msi
+        - name: Upload Bundle
+          uses: actions/upload-artifact@v2
+          with:
+            path: "cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe"
+            name: cs_windows_firewall_installer_bundle.exe

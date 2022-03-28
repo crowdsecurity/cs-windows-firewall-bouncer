@@ -19,9 +19,15 @@ jobs:
         - run: "nuget restore ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln"
         - name: Build release bouncer
           run: "msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:rebuild -property:Configuration=Release"
-        - name: Upload to release
+        - name: Upload MSI to release
           uses: JasonEtco/upload-to-release@master
           with:
             args: "cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi application/octet-stream"
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: Upload EXE bundle to release
+          uses: JasonEtco/upload-to-release@master
+          with:
+            args: "cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe application/octet-stream"
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
