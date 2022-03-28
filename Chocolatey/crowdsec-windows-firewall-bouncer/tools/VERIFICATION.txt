@@ -1,0 +1,7 @@
+﻿
+
+VERIFICATION
+Verification is intended to assist the Chocolatey moderators and community
+in verifying that this package's contents are trustworthy.
+ 
+This package is published by CrowdSecurity itself. The MSI is identical to the one published in the github releases for the project.

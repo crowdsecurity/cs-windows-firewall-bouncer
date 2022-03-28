@@ -1,0 +1,1 @@
+﻿Stop-Service cs-windows-firewall-bouncer
