@@ -61,7 +61,8 @@ jobs:
           run: dotnet tool install --global SignClient --version 1.3.155
         - name: Generate appconfig.json
           shell: powershell
-          APPCONFIG_JSON: ${{ secrets.APPCONFIG_JSON_B64 }}
+          env:
+            APPCONFIG_JSON: ${{ secrets.APPCONFIG_JSON_B64 }}
           run: |
             $appconfig = Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json"; 
             $encodedBytes = [System.Convert]::FromBase64String($env:APPCONFIG_JSON); 
