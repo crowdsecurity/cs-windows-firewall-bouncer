@@ -71,7 +71,7 @@ jobs:
         - name: Sign bouncer
           run: SignClient.exe Sign --name "windows-firewall-bouncer.exe" --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows --input "**\\*.{exe,dll}" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
         - name: Build installers
-          run: msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-bouncer-bundle:build -property:Configuration=Release
+          run: msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-installer-bundle:build -property:Configuration=Release
         - name: Sign MSI
           run: SignClient.exe Sign --name "windows-firewall-bouncer.msi" --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\ --input "**\\*.msi" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
         - name: Sign Bundle
