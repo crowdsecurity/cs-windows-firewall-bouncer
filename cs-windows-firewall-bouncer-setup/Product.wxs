@@ -28,6 +28,10 @@
           <FileSearch Id='cscli' Name='cscli.exe' />
         </DirectorySearch>
     </Property>
+    
+    <SetProperty After="AppSearch" Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="cscli.exe was not found, please register the bouncer with CrowdSec manually and update the service to start on boot" >
+      NOT CSCLIPRESENT
+    </SetProperty>
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="$(var.Program_Files)">
@@ -74,10 +78,6 @@
     </InstallExecuteSequence>
     
     <Property Id="MsiLogging" Value="voicewarmupx!" />
-
-    <SetProperty After="FindRelatedProducts" Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="cscli.exe was not found, please register the bouncer with CrowdSec manually and update the service to start on boot" >
-      <![CDATA[NOT CSCLIPRESENT]]>
-    </SetProperty>
 
     <UI Id="WixUI_HK">
 
