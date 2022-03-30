@@ -72,6 +72,12 @@ jobs:
           run: SignClient.exe Sign --name "windows-firewall-bouncer.exe" --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows --input "**\\*.{exe,dll}" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
         - name: Build installers
           run: msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-installer-bundle -property:Configuration=Release
+        - name: debug MSI
+          run: Get-ChildItem ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer-setup\\bin\\
+        - name: debug MSI 2
+          run: Get-ChildItem ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\
+        - name: debug bundle
+          run: Get-ChildItem ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-installer-bundle\\bin\\Release\\
         - name: Sign MSI
           run: SignClient.exe Sign --name "windows-firewall-bouncer.msi" --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\ --input "**\\*.msi" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
         - name: Sign Bundle
