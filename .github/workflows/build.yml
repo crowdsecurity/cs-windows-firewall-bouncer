@@ -66,7 +66,7 @@ jobs:
           run: |
             $appconfig = Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json"; 
             $encodedBytes = [System.Convert]::FromBase64String($env:APPCONFIG_JSON); 
-            Set-Content $appconfig -Value $encodedBytes -AsByteStream;
+            Set-Content $appconfig -Value $encodedBytes -Encoding Byte;
             Write-Output "::set-output name=APPCONFIG_JSON::$appconfig";
         - name: Sign bouncer
           run: SignClient.exe Sign --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows --input "**\\*.{exe,dll}" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
