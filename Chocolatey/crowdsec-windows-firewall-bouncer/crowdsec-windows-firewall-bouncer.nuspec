@@ -18,7 +18,7 @@
     <projectSourceUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer</projectSourceUrl>
     <docsUrl>https://docs.crowdsec.net</docsUrl>
     <bugTrackerUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer/issues</bugTrackerUrl>
-    <tags>crowdsec-windows-firewall-bouncer SPACE_SEPARATED</tags>
+    <tags>crowdsec-windows-firewall-bouncer crowdsec bouncer firewall</tags>
     <summary>CrowdSec bouncer for the Windows Firewall</summary>
     <description>Crowdsec bouncer for the Windows Firewall. It requires a working CrowdSec installation to work.</description>
     <!-- =============================== -->
