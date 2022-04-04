@@ -179,6 +179,10 @@ namespace Fw
 
             foreach (var decision in decisions.New)
             {
+                if (findBucketForIp(decision.value) != null)
+                {
+                    continue;
+                }
                 var bucket = findAvailableBucket();
                 bucket.AddIP(decision.value);
             }
