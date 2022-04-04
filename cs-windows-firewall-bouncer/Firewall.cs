@@ -172,6 +172,7 @@ namespace Fw
                 var bucket = findBucketForIp(decision.value);
                 if (bucket == null)
                 {
+                    Logger.Trace("was not able to find a bucket for deleting {0}", decision.value);
                     continue;
                 }
                 bucket.RemoveIP(decision.value);
@@ -181,6 +182,7 @@ namespace Fw
             {
                 if (findBucketForIp(decision.value) != null)
                 {
+                    Logger.Trace("{0} already exists in a bucket", decision.value);
                     continue;
                 }
                 var bucket = findAvailableBucket();
