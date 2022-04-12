@@ -55,34 +55,8 @@ jobs:
             .\.sonar\scanner\dotnet-sonarscanner begin /k:"crowdsecurity_cs-windows-firewall-bouncer" /o:"crowdsecurity" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
             msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-bouncer:rebuild -property:Configuration=Release
             .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-        #FIXME: when it is working move everything to release only, we don't want to allow people to sign arbitrary binaries with our CI :) 
-        - name: Install SignClient
-          shell: powershell
-          run: dotnet tool install --global SignClient --version 1.3.155
-        - name: Generate appconfig.json
-          shell: powershell
-          env:
-            APPCONFIG_JSON: ${{ secrets.APPCONFIG_JSON_B64 }}
-          run: |
-            $appconfig = Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json"; 
-            $encodedBytes = [System.Convert]::FromBase64String($env:APPCONFIG_JSON); 
-            Set-Content $appconfig -Value $encodedBytes -Encoding Byte;
-            Write-Output "::set-output name=APPCONFIG_JSON::$appconfig";
-        - name: Sign bouncer
-          run: SignClient.exe Sign --name "windows-firewall-bouncer.exe" --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows --input "*.{exe,dll}" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
         - name: Build installers
           run: msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-installer-bundle -property:Configuration=Release
-        - name: Sign MSI
-          run: SignClient.exe Sign --name "windows-firewall-bouncer.msi" --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\ --input "*.msi" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
-        - name: Sign Bundle
-          shell: powershell
-          run: |
-            $env:Path += ";C:\Program Files (x86)\WiX Toolset v3.11\bin"
-             New-Item -type Directory bundle_sign
-            insignia.exe -ib ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe  -o bundle_sign\\engine.exe
-            SignClient.exe Sign --name "windows-firewall-bouncer-bundle-engine.exe" --baseDirectory ${env:GITHUB_WORKSPACE}\\bundle_sign --input "*.exe" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
-            insignia.exe -ab bundle_sign\\engine.exe ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe  -o ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe
-            SignClient.exe Sign --name "windows-firewall-bouncer-bundle.exe" --baseDirectory ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-installer-bundle\\bin\\Release\\ --input "*.exe" --config (Join-Path -Path $env:RUNNER_TEMP -ChildPath "appconfig.json") --user ${{ secrets.SIGNING_CLIENT_USER }} --secret '${{ secrets.SIGNING_CLIENT_SECRET }}'
         - name: Upload MSI
           uses: actions/upload-artifact@v2
           with:
