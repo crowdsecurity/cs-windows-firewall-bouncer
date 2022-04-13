@@ -2,6 +2,9 @@ trigger:
   tags:
     include:
       - v*
+  branches:
+    exclude:
+      - "*"
 
 pool:
   vmImage: windows-latest
