@@ -105,5 +105,16 @@ stages:
           runOnce:
             deploy:
               steps:
-                - script: echo my first deployment
+                - bash: |
+                    tag=$(curl -H "Accept: application/vnd.github.v3+json"   https://api.github.com/repos/crowdsecurity/cs-windows-firewall-bouncer/releases | jq '. | map(select(.prerelease==true)) | sort_by(.created_at) | reverse | .[0].tag_name')
+                    echo "##vso[task.setvariable variable=LatestPreRelease;isOutput=true]$tag"
+                  name: GetLatestPrelease
+                - task: GitHubRelease@1
+                  inputs:
+                    gitHubConnection: "crowdsecurity"
+                    repositoryName: '$(Build.Repository.Name)'
+                    action: 'edit'
+                    tag: '$(GetLatestPrelease.LatestPreRelease)'
+                    assetUploadMode: 'replace'
+                  condition: ne(variables.GetLatestPrelease.LatestPreRelease, "")
 
