@@ -13,6 +13,7 @@ stages:
   - stage: Build
     jobs:
       - job:
+        displayName: "Build"
         steps:
           - pwsh: |
               nuget restore $(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer.sln
@@ -94,3 +95,11 @@ stages:
               ArtifactName: 'cs_windows_firewall_bouncer_setup.msi'
               publishLocation: 'Container'
             displayName: "Upload MSI artifact"
+      - deployment: "Publish"
+        displayName: "Publish to GitHub"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: echo my first deployment
+
