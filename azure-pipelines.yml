@@ -55,7 +55,7 @@ steps:
   inputs:
     solution: 'cs-windows-firewall-bouncer.sln'
     vsVersion: '17.0'
-    msbuildArgs: '-t:cs-windows-firewall-installer-bundle'
+    msbuildArgs: '-t:cs-windows-firewall-installer-bundle /p:RunWixToolsOutOfProc=true'
     platform: 'x64'
     configuration: 'Release'
 
