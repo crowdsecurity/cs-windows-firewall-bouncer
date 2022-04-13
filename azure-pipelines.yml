@@ -36,18 +36,17 @@ steps:
   inputs:
     azureSubscription: 'Azure subscription 1(8a93ab40-7e99-445e-ad47-0f6a3e2ef546)'
     KeyVaultName: 'CodeSigningSecrets'
-    SecretsFilter: 'CodeSigningUser,CodeSigningPassword,CodeSigningConfigB64'
+    SecretsFilter: 'CodeSigningUser,CodeSigningPassword'
     RunAsPreJob: false
-- pwsh: |
-    $appconfig = Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json"; 
-    $encodedBytes = [System.Convert]::FromBase64String($env:CodeSigningConfigB64); 
-    Set-Content $appconfig -Value $encodedBytes;
-  displayName: "Generate appconfig.json"
+
+- task: DownloadSEcureFile@1
+  inputs:
+    secureFile: appsettings.json
 
 - pwsh: |
     SignClient.exe Sign  --name "windows-firewall-bouncer.exe" `
     --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows) `
-    --input "*.{exe,dll}" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
+    --input "*.{exe,dll}" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
     --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
   displayName: "Sign bouncer binary"
 
@@ -63,7 +62,7 @@ steps:
 - pwsh: |
    SignClient.exe Sign --name "windows-firewall-bouncer.msi" `
    --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer-setup\\bin\\x64\\Release) `
-   --input "*.msi" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
+   --input "*.msi" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
    --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
   displayName: "Sign MSI"
 
@@ -72,12 +71,12 @@ steps:
    New-Item -type Directory bundle_sign
    insignia.exe -ib (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)  -o bundle_sign\\engine.exe
    SignClient.exe Sign --name "windows-firewall-bouncer-bundle-engine.exe" `
-   --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) --ChildPath bundle_sign) --input "*.exe" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
+   --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) --ChildPath bundle_sign) --input "*.exe" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
    --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
    insignia.exe -ab bundle_sign\\engine.exe (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe) `
    -o (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)
    SignClient.exe Sign --name "windows-firewall-bouncer-bundle.exe" `
    --baseDirectory (Join-Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release) --input "*.exe" `
-   --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
+   --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
    --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
   displayName: "Sign bundle"
