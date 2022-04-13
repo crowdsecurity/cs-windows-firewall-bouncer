@@ -39,14 +39,14 @@ steps:
     SecretsFilter: 'CodeSigningUser,CodeSigningPassword,CodeSigningConfigB64'
     RunAsPreJob: false
 - pwsh: |
-    $appconfig = Join-Path -Path $env:Agent.TempDirectory -ChildPath "appconfig.json"; 
+    $appconfig = Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json"; 
     $encodedBytes = [System.Convert]::FromBase64String($env:CodeSigningConfigB64); 
     Set-Content $appconfig -Value $encodedBytes -Encoding Byte;
 
 - pwsh: |
     SignClient.exe Sign  --name "windows-firewall-bouncer.exe" `
-    --baseDirectory (Join-Path -Path $env:Build.Repository.LocalPath -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows) `
-    --input "*.{exe,dll}" --config (Join-Path -Path $env:Agent.TempDirectory -ChildPath "appconfig.json") `
+    --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows) `
+    --input "*.{exe,dll}" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
     --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
   displayName: "Sign bouncer binary"
 
@@ -61,7 +61,7 @@ steps:
 
 - pwsh: |
    SignClient.exe Sign --name "windows-firewall-bouncer.msi" `
-   --baseDirectory (Join-Path -Path $env:Build.Repository.LocalPath -ChildPath cs-windows-firewall-bouncer-setup\\bin\\x64\\Release) `
+   --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer-setup\\bin\\x64\\Release) `
    --input "*.msi" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
    --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
   displayName: "Sign MSI"
@@ -69,14 +69,14 @@ steps:
 - pwsh: |
    $env:Path += ";C:\Program Files (x86)\WiX Toolset v3.11\bin"
    New-Item -type Directory bundle_sign
-   insignia.exe -ib (Join-Path -Path $env:Build.Repository.LocalPath -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)  -o bundle_sign\\engine.exe
+   insignia.exe -ib (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)  -o bundle_sign\\engine.exe
    SignClient.exe Sign --name "windows-firewall-bouncer-bundle-engine.exe" `
-   --baseDirectory (Join-Path -Path $env:Build.Repository.LocalPath --ChildPath bundle_sign) --input "*.exe" --config (Join-Path -Path $env:Agent.TempDirectory -ChildPath "appconfig.json") `
+   --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) --ChildPath bundle_sign) --input "*.exe" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
    --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
-   insignia.exe -ab bundle_sign\\engine.exe (Join-Path -Path $env:Build.Repository.LocalPath -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe) `
-   -o (Join-Path -Path $env:Build.Repository.LocalPath -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)
+   insignia.exe -ab bundle_sign\\engine.exe (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe) `
+   -o (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)
    SignClient.exe Sign --name "windows-firewall-bouncer-bundle.exe" `
-   --baseDirectory (Join-Path $env:Build.Repository.LocalPath -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release) --input "*.exe" `
-   --config (Join-Path -Path $env:Agent.TempDirectory -ChildPath "appconfig.json") `
+   --baseDirectory (Join-Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release) --input "*.exe" `
+   --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json") `
    --user $env:CodeSigningUser --secret '$env:CodeSigningPassword'
   displayName: "Sign bundle"
