@@ -116,5 +116,5 @@ stages:
                     action: 'edit'
                     tag: '$(GetLatestPrelease.LatestPreRelease)'
                     assetUploadMode: 'replace'
-                  condition: ne(variables.GetLatestPrelease.LatestPreRelease, "")
+                  condition: ne(variables.GetLatestPrelease.LatestPreRelease, '')
 
