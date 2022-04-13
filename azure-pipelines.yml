@@ -80,3 +80,17 @@ steps:
    --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
    --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
   displayName: "Sign bundle"
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.Repository.LocalPath)\\cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe'
+    ArtifactName: 'cs_windows_firewall_installer_bundle.exe'
+    publishLocation: 'Container'
+  displayName: "Upload bundle artifact"
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi'
+    ArtifactName: 'cs_windows_firewall_bouncer_setup.msi'
+    publishLocation: 'Container'
+  displayName: "Upload MSI artifact"
