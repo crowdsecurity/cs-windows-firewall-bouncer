@@ -97,6 +97,7 @@ stages:
             displayName: "Upload MSI artifact"
       - deployment: "Publish"
         displayName: "Publish to GitHub"
+        environment: github-cs-windows-firewall-bouncer
         strategy:
           runOnce:
             deploy:
