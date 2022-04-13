@@ -7,13 +7,16 @@ pool:
   vmImage: windows-latest
 
 steps:
-- task: NuGetCommand@2
-  displayName: "Install build deps"
-  inputs:
-    command: 'restore'
-    restoreSolution: '$(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer.sln'
-    feedsToUse: 'select'
+#- task: NuGetCommand@2
+#  displayName: "Install build deps"
+#  inputs:
+#    command: 'restore'
+#    restoreSolution: '$(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer.sln'
+#    feedsToUse: 'select'
 
+- pwsh: |
+   nuget restore $(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer.sln
+  displayName: "restore build deps"
 - task: DotNetCoreCLI@2
   displayName: "Install SignClient"
   inputs:
