@@ -41,7 +41,8 @@ steps:
 - pwsh: |
     $appconfig = Join-Path -Path $(Agent.TempDirectory) -ChildPath "appconfig.json"; 
     $encodedBytes = [System.Convert]::FromBase64String($env:CodeSigningConfigB64); 
-    Set-Content $appconfig -Value $encodedBytes -Encoding Byte;
+    Set-Content $appconfig -Value $encodedBytes;
+  displayName: "Generate appconfig.json"
 
 - pwsh: |
     SignClient.exe Sign  --name "windows-firewall-bouncer.exe" `
