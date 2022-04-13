@@ -95,6 +95,9 @@ stages:
               ArtifactName: 'cs_windows_firewall_bouncer_setup.msi'
               publishLocation: 'Container'
             displayName: "Upload MSI artifact"
+  - stage: Publish
+    dependsOn: Build
+    jobs:
       - deployment: "Publish"
         displayName: "Publish to GitHub"
         environment: github-cs-windows-firewall-bouncer
