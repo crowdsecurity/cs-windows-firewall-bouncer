@@ -71,7 +71,7 @@ stages:
               $env:Path += ";C:\Program Files (x86)\WiX Toolset v3.11\bin"
               New-Item -type Directory bundle_sign
               insignia.exe -ib (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)  -o bundle_sign\\engine.exe
-              SignClient.exe Sign -l debug --name "windows-firewall-bouncer-bundle-engine.exe" `
+              SignClient.exe Sign -l verbose --name "windows-firewall-bouncer-bundle-engine.exe" `
               --baseDirectory (Join-Path -Path (pwd) --ChildPath bundle_sign) --input "*.exe" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
               --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
               insignia.exe -ab bundle_sign\\engine.exe (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe) `
