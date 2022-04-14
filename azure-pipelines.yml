@@ -117,7 +117,7 @@ stages:
                     tag: '$(GetLatestPrelease.LatestPreRelease)'
                     assetUploadMode: 'replace'
                     assets: |
-                      $(System.ArtifactsDirectory)\\cs_windows_firewall_bouncer_setup.msi\\cs_windows_firewall_bouncer_setup.msi
-                      $(System.ArtifactsDirectory)\\cs_windows_firewall_installer_bundle.exe\\cs_windows_firewall_installer_bundle.exe
+                      $(Build.ArtifactStagingDirectory)\cs_windows_firewall_bouncer_setup.msi\cs_windows_firewall_bouncer_setup.msi
+                      $(Build.ArtifactStagingDirectory)\cs_windows_firewall_installer_bundle.exe\cs_windows_firewall_installer_bundle.exe
                   condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
 
