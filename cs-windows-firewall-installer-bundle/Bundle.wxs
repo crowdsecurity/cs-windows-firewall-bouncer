@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	<Bundle Name="Crowdsec Windows Firewall Bouncer" Version="0.0.1" Manufacturer="CrowdSecurity" UpgradeCode="56874602-c276-407e-b217-ebb035e3a2e9">
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+      <bal:WixStandardBootstrapperApplication
+        LicenseUrl=""
+        SuppressOptionsUI="yes"
+        ShowFilesInUse="yes"
+        ShowVersion="yes"
+        xmlns:bal="http://schemas.microsoft.com/wix/BalExtension" />
+    </BootstrapperApplicationRef>
+		<Chain>
+      <PackageGroupRef Id="DotnetGroup"/>
+      <RollbackBoundary Vital="yes"/>
+      <MsiPackage SourceFile="..\cs-windows-firewall-bouncer-setup\bin\x64\Release\cs_windows_firewall_bouncer_setup.msi" DisplayInternalUI="yes" Vital="yes" />
+		</Chain>
+	</Bundle>
+  <Fragment>
+    <util:FileSearch Variable="DotnetVersion" Id='dotnetfolder' Path="[ProgramFiles64Folder]dotnet\dotnet.exe" Result="version"/>
+    <PackageGroup Id="DotnetGroup">
+      <ExePackage DetectCondition="DotnetVersion &gt;= v6.0.0.0" Compressed="no" Name=".NET Runtime" DownloadUrl="https://download.visualstudio.microsoft.com/download/pr/1ac0b57e-cf64-487f-aecf-d7df0111fd56/2484cbe1ffacceacaa41eab92a6de998/dotnet-runtime-6.0.3-win-x64.exe">
+        <RemotePayload Version="6.0.3.31023" Description="Microsoft .NET Runtime - 6.0.3 (x64)" Hash="5C5F0EA8C9A8EF276C4DA9F471F4A49DB695BD83" ProductName="Microsoft .NET Runtime - 6.0.3 (x64)" Size="27877920"/>
+      </ExePackage>
+    </PackageGroup>
+  </Fragment>
+</Wix>

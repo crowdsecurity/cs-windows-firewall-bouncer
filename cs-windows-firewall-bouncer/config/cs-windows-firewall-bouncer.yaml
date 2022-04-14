@@ -1,0 +1,5 @@
+api_endpoint: http://localhost:8080
+api_key: ${API_KEY}
+update_frequency: 10
+log_media: file
+log_dir: C:\\ProgramData\\CrowdSec\\log\\
