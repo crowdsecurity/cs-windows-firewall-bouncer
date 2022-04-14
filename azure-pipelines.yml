@@ -116,8 +116,10 @@ stages:
                     action: 'edit'
                     tag: '$(GetLatestPrelease.LatestPreRelease)'
                     assetUploadMode: 'replace'
+                    isPreRelease: true #we force prerelease because the pipeline is invoked on tag creation, which happens when we do a prerelease
+                    #the .. is an ugly hack, but I can't find the var that gives D:\a\1 ...
                     assets: |
-                      $(Build.ArtifactStagingDirectory)\cs_windows_firewall_bouncer_setup.msi\cs_windows_firewall_bouncer_setup.msi
-                      $(Build.ArtifactStagingDirectory)\cs_windows_firewall_installer_bundle.exe\cs_windows_firewall_installer_bundle.exe
+                      $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.msi\cs_windows_firewall_bouncer_setup.msi
+                      $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_installer_bundle.exe\cs_windows_firewall_installer_bundle.exe
                   condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
 
