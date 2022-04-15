@@ -82,7 +82,12 @@ stages:
               --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
               --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
             displayName: "Sign bundle"
-
+          - pwsh: |
+              $build_version=("$(Build.SourceBranch)".Split('/')[2].Substring(1))
+              .\make_choco.ps1
+              Write-Host  "##vso[task.setvariable variable=BuildVersion;isOutput=true]$build_version"
+            displayName: "Build chocolatey package"
+            name: "chocoBuild"
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: '$(Build.Repository.LocalPath)\\cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe'
@@ -96,6 +101,12 @@ stages:
               ArtifactName: 'cs_windows_firewall_bouncer_setup.msi'
               publishLocation: 'Container'
             displayName: "Upload MSI artifact"
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.Repository.LocalPath)\\Chocolatey\\crowdsec-windows-firewall-bouncer\\crowdsec-windows-firewall-bouncer.$(chocoBuild.BuildVersion).nupkg'
+              ArtifactName: 'cs_windows_firewall_bouncer_setup.nupkg'
+              publishLocation: 'Container'
+            displayName: "Upload Chocolatey nupkg"
   - stage: Publish
     dependsOn: Build
     jobs:
