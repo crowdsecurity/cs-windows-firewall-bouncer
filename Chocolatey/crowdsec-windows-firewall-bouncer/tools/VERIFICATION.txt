@@ -4,4 +4,7 @@ VERIFICATION
 Verification is intended to assist the Chocolatey moderators and community
 in verifying that this package's contents are trustworthy.
  
-This package is published by CrowdSecurity itself. The MSI is identical to the one published in the github releases for the project.
+This package is published by CrowdSecurity itself. The MSI is identical to the one published in the github releases for the project (https://github.com/crowdsecurity/cs-windows-firewall-bouncer/releases).
+You can compare the hashes with the `Get-FileHash` powershell command.
+Both MSIs have a valid Authenticode signature, with `CrowdSec SAS` as the signer.
+The signature can be verified with the `Get-AuthenticodeSignature` powershell command.
