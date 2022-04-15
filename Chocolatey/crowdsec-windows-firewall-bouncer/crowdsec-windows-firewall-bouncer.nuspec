@@ -24,7 +24,7 @@
     <!-- =============================== -->
 
     <dependencies>
-      <dependency id="dotnet-6.0-runtime" version="6.0.0" />
+      <dependency id="dotnet-6.0-runtime" />
       <dependency id="chocolatey-core.extension" version="1.1.0" />
     </dependencies>
   </metadata>
