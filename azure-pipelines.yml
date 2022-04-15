@@ -113,6 +113,8 @@ stages:
       - deployment: "Publish"
         displayName: "Publish to GitHub"
         environment: github
+        variables:
+          BuildVersion: $[ stageDependencies.Build.Build.outputs['chocoBuild.BuildVersion'] ]
         strategy:
           runOnce:
             deploy:
@@ -142,6 +144,6 @@ stages:
                   condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
                 - pwsh: |
                    choco apikey --key $(ChocolateyAPIKey) --source https://push.chocolatey.org/
-                   choco push $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.nupkg\crowdsec-windows-firewall-bouncer.$(stageDependencies.Build.Build.outputs['chocoBuild.BuildVersion']).nupkg --source https://push.chocolatey.org/
+                   choco push $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.nupkg\crowdsec-windows-firewall-bouncer.$(BuildVersion).nupkg --source https://push.chocolatey.org/
                   displayName: "Push to Chocolatey"
                   condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
