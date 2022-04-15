@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -12,6 +13,7 @@ namespace Cfg
         public int UpdateFrequency { get; set; }
         public string LogMedia { get; set; }
         public string LogDir { get; set; }
+        public List<string> FwProfiles { get; set; }
 
 
     }
