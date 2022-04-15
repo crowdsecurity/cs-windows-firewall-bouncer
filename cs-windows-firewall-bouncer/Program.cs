@@ -11,6 +11,7 @@ namespace cs_windows_firewall_bouncer
 {
     class Program
     {
+        private static readonly string[] AllowedFWProfiles = new string[] { "domain", "private", "public" };
         public class Options
         {
             [Option('c', "config", Required = false, Default = "C:\\Program Files\\CrowdSec\\bouncers\\cs-windows-firewall-bouncer\\cs-windows-firewall-bouncer.yaml", HelpText = "Path to the config file")]
@@ -47,7 +48,7 @@ namespace cs_windows_firewall_bouncer
 
         protected static void consoleHandler(object sender, ConsoleCancelEventArgs args)
         {
-            Firewall firewall = new();
+            Firewall firewall = new(null);
             Console.WriteLine("Deleting all firewall rules.");
             firewall.DeleteAllRules();
             Console.WriteLine("Done deleting all firewall rules.");
@@ -80,7 +81,7 @@ namespace cs_windows_firewall_bouncer
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Could not load configuration: {0}", ex.Message);
+                Console.WriteLine("Could not load configuration: {0}", ex.ToString());
                 return;
             }
 
@@ -131,11 +132,24 @@ namespace cs_windows_firewall_bouncer
 
             if (opts.RemoveAll)
             {
-                Firewall firewall = new();
+                Firewall firewall = new(null);
                 Logger.Info("Deleting all firewall rules.");
                 firewall.DeleteAllRules();
                 Logger.Info("Done deleting all firewall rules.");
                 return;
+            }
+
+            if (config.config.FwProfiles != null)
+            {
+                foreach (var profile in config.config.FwProfiles)
+                {
+                    var pos = Array.IndexOf(AllowedFWProfiles, profile);
+                    if (pos == -1)
+                    {
+                        Logger.Fatal("Invalid value {0} for fw_profiles: must be one of 'domain', 'public' or 'private'", profile);
+                        return;
+                    }
+                }
             }
 
             if (!Environment.UserInteractive)

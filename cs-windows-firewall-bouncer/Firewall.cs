@@ -74,12 +74,28 @@ namespace Fw
         private readonly INetFwMgr fwManager;
         private readonly INetFwPolicy2 policy;
         private readonly List<FirewallRule> rulesBucket = new();
+        private int profiles;
+
+        private readonly Dictionary<string, int> profilesDict = new Dictionary<string, int> { { "domain", 1 }, { "private", 2 }, { "public", 4 } };
 
 
-        public Firewall()
+
+        public Firewall(List<string> fwprofiles)
         {
             fwManager = (INetFwMgr)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwMgr"));
             policy = (INetFwPolicy2)Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+            if (fwprofiles == null || fwprofiles.Count == 0)
+            {
+                profiles = policy.CurrentProfileTypes;
+            } 
+            else
+            {
+                Logger.Info("Enabling rules for profiles {0}", string.Join(',', fwprofiles));
+                foreach (string p in fwprofiles)
+                {
+                    profiles |= profilesDict[p];
+                }
+            }
             DeleteAllRules();
         }
 
@@ -229,7 +245,7 @@ namespace Fw
             rule.Name = name;
             rule.Description = "CrowdSec Managed rule";
             rule.Enabled = false;
-            rule.Profiles = policy.CurrentProfileTypes;
+            rule.Profiles = profiles;
             rule.Action = NET_FW_ACTION_.NET_FW_ACTION_BLOCK;
             policy.Rules.Add(rule);
         }

@@ -42,7 +42,7 @@ namespace cs_windows_firewall_bouncer
         protected override void OnStop()
         {
             Logger.Debug("Onstop service");
-            Firewall firewall = new();
+            Firewall firewall = new(null);
             firewall.DeleteAllRules();
             Logger.Debug("Onstop service end");
         }

@@ -22,7 +22,7 @@ namespace Manager
             {
                 interval = 10;
             }
-            firewall = new Firewall();
+            firewall = new Firewall(config.config.FwProfiles);
 
             if (!firewall.IsEnabled())
             {
