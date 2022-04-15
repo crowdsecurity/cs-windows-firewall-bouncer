@@ -74,7 +74,7 @@ namespace Fw
         private readonly INetFwMgr fwManager;
         private readonly INetFwPolicy2 policy;
         private readonly List<FirewallRule> rulesBucket = new();
-        private int profiles;
+        private readonly int profiles;
 
         private readonly Dictionary<string, int> profilesDict = new Dictionary<string, int> { { "domain", 1 }, { "private", 2 }, { "public", 4 } };
 
