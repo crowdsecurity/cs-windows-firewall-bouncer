@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-	<Bundle Name="Crowdsec Windows Firewall Bouncer" Version="0.0.2" Manufacturer="CrowdSecurity" UpgradeCode="56874602-c276-407e-b217-ebb035e3a2e9">
+	<Bundle Name="Crowdsec Windows Firewall Bouncer" Version="0.0.3" Manufacturer="CrowdSecurity" UpgradeCode="56874602-c276-407e-b217-ebb035e3a2e9">
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
       <bal:WixStandardBootstrapperApplication
         LicenseUrl=""

@@ -46,7 +46,7 @@ namespace Api
                 this.apiEndpoint = apiEndpoint + '/';
             }
             client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
-            client.DefaultRequestHeaders.Add("User-Agent", "cs-windows-fw-bouncer/0.0.2");
+            client.DefaultRequestHeaders.Add("User-Agent", "cs-windows-fw-bouncer/0.0.3");
         }
 
         public async Task<DecisionStreamResponse> GetDecisions(bool startup)
