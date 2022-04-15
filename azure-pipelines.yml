@@ -13,7 +13,7 @@ pool:
 stages:
   - stage: Build
     jobs:
-      - job:
+      - job: Build
         displayName: "Build"
         steps:
           - pwsh: |
@@ -121,6 +121,12 @@ stages:
                     tag=$(curl -H "Accept: application/vnd.github.v3+json"   https://api.github.com/repos/crowdsecurity/cs-windows-firewall-bouncer/releases | jq -r '. | map(select(.prerelease==true)) | sort_by(.created_at) | reverse | .[0].tag_name')
                     echo "##vso[task.setvariable variable=LatestPreRelease;isOutput=true]$tag"
                   name: GetLatestPrelease
+                - task: AzureKeyVault@2
+                  inputs:
+                    azureSubscription: 'Azure subscription 1(8a93ab40-7e99-445e-ad47-0f6a3e2ef546)'
+                    KeyVaultName: 'CodeSigningSecrets'
+                    SecretsFilter: 'ChocolateyAPIKey'
+                    RunAsPreJob: false
                 - task: GitHubRelease@1
                   inputs:
                     gitHubConnection: "github.com_blotus"
@@ -134,4 +140,8 @@ stages:
                       $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.msi\cs_windows_firewall_bouncer_setup.msi
                       $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_installer_bundle.exe\cs_windows_firewall_installer_bundle.exe
                   condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
-
+                - pwsh: |
+                   choco apikey --key $(ChocolateyAPIKey) --source https://push.chocolatey.org/
+                   choco push $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.nupkg\crowdsec-windows-firewall-bouncer.$(stageDependencies.Build.Build.outputs['chocoBuild.BuildVersion']).nupkg --source https://push.chocolatey.org/
+                  displayName: "Push to Chocolatey"
+                  condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
