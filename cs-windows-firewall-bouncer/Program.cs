@@ -14,7 +14,7 @@ namespace cs_windows_firewall_bouncer
         private static readonly string[] AllowedFWProfiles = new string[] { "domain", "private", "public" };
         public class Options
         {
-            [Option('c', "config", Required = false, Default = "C:\\Program Files\\CrowdSec\\bouncers\\cs-windows-firewall-bouncer\\cs-windows-firewall-bouncer.yaml", HelpText = "Path to the config file")]
+            [Option('c', "config", Required = false, Default = "C:\\ProgramData\\CrowdSec\\config\\bouncers\\cs-windows-firewall-bouncer.yaml", HelpText = "Path to the config file")]
             public string Config { get; set; }
             [Option('r', "remove", Required = false, Default = false, HelpText = "Delete all crowdsec firewall rules and exit")]
             public bool RemoveAll { get; set; }

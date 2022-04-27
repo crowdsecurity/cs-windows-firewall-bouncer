@@ -14,12 +14,13 @@
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."  Schedule="afterInstallExecute" />
     <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
 
     <Feature Id="ProductFeature" Title="CrowdSec Windows Firewall Bouncer" Level="1">
       <ComponentRef Id="bouncerexe_service_start" />
       <ComponentRef Id="bouncerexe_service_dont_start" />
+      <ComponentRef Id="bouncerconfig"/>
       <ComponentRef Id="fwbouncerother" />
     </Feature>
 
@@ -32,8 +33,19 @@
     <SetProperty After="AppSearch" Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="cscli.exe was not found, please register the bouncer with CrowdSec manually and update the service to start on boot" >
       NOT CSCLIPRESENT
     </SetProperty>
-
+    
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="CrowdSecCommonDir" Name="CrowdSec">
+          <Directory Id="ConfigDir" Name="config">
+            <Directory Id="BouncersDir" Name="bouncers">
+              <Component Id="bouncerconfig">
+                <File Id="bouncer.yaml" Source="$(var.cs-windows-firewall-bouncer.ProjectDir)\config\cs-windows-firewall-bouncer.yaml" Name="cs-windows-firewall-bouncer.yaml" />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
       <Directory Id="$(var.Program_Files)">
         <Directory Id="CrowdsecFolder" Name="CrowdSec">
           <Directory Id="bouncers" Name="bouncers">
@@ -43,7 +55,6 @@
                 <Condition>CSCLIPRESENT</Condition>
                 <ServiceInstall Id="BouncerService" Name="cs-windows-firewall-bouncer" DisplayName="Crowdsec Windows Firewall Bouncer" Description="Crowdsec Windows Firewall Bouncer" Start="auto" Type="ownProcess" ErrorControl="normal" Account="LocalSystem" Vital="no" Interactive="no" />
                 <ServiceControl Id="BouncerService" Name="cs-windows-firewall-bouncer" Start="install" Stop="both" Remove="uninstall" Wait="no" />
-                <ServiceConfig Id="BouncerService" ServiceName="cs-windows-firewall-bouncer" DelayedAutoStart="yes" OnInstall="yes" OnReinstall ="yes"/>
               </Component>
               <Component Id="bouncerexe_service_dont_start" Guid="4510eb0d-b255-4a88-92a2-4355ec392f93">
                 <File Id="bouncer2.exe" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\cs-windows-firewall-bouncer.exe" Name="cs-windows-firewall-bouncer.exe" />
@@ -52,7 +63,6 @@
                 <ServiceControl Id="BouncerService2" Name="cs-windows-firewall-bouncer" Stop="both" Remove="uninstall" Wait="no" />
               </Component>
               <Component Id="fwbouncerother" Guid="4b650a10-7531-4569-ba49-0867ddadf482">
-                <File Id="bouncer.yaml" Source="$(var.cs-windows-firewall-bouncer.ProjectDir)\config\cs-windows-firewall-bouncer.yaml" Name="cs-windows-firewall-bouncer.yaml" />
                 <File Id="nlog.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\NLog.dll" Name="NLog.dll" />
                 <File Id="json.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" />
                 <File Id="fw.dll" Source="$(var.cs-windows-firewall-bouncer.TargetDir)\Interop.NetFwTypeLib.dll" Name="Interop.NetFwTypeLib.dll" />
@@ -71,11 +81,11 @@
     </Directory>
 
     <CustomAction Id="RegisterBouncer" BinaryKey="RegisterBouncer.CA" DllEntry="RegisterBouncer" Execute="deferred" Return="check" Impersonate="no" />
-    <Property Id="RegisterBouncer" Value="bouncerPrefix=windows-firewall-bouncer-;bouncerConfigPath=C:\Program Files\CrowdSec\bouncers\cs-windows-firewall-bouncer\cs-windows-firewall-bouncer.yaml" />
+    <Property Id="RegisterBouncer" Value="bouncerPrefix=windows-firewall-bouncer-;bouncerConfigPath=C:\ProgramData\CrowdSec\config\bouncers\cs-windows-firewall-bouncer.yaml" />
     <Binary Id="RegisterBouncer.CA" SourceFile="..\bouncer-register-custom-action\bin\x64\Release\bouncer-register-custom-action.CA.dll" />
     
     <InstallExecuteSequence>
-      <Custom Action="RegisterBouncer" After="InstallFiles">NOT Installed AND NOT REMOVE AND CSCLIPRESENT</Custom>
+      <Custom Action="RegisterBouncer" After="InstallFiles">NOT Installed AND NOT REMOVE AND CSCLIPRESENT AND NOT WIX_UPGRADE_DETECTED</Custom>
     </InstallExecuteSequence>
     
     <Property Id="MsiLogging" Value="voicewarmupx!" />
