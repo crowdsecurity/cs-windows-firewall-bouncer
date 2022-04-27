@@ -33,22 +33,20 @@ namespace Manager
 
         public async Task<bool> Run()
         {
-            var decisions = await apiClient.GetDecisions(true);
-            if (decisions == null)
-            {
-                Logger.Error("Could not get initial decisions from LAPI.");
-                return false;
-            }
-            firewall.UpdateRule(decisions);
             var intervalms = this.interval * 1000;
+            var startup = true;
             while (true)
             {
-                decisions = await apiClient.GetDecisions(false);
+                var decisions = await apiClient.GetDecisions(startup);
                 if (decisions == null)
                 {
-                    Logger.Error("Could not get decisions from LAPI.");
+                    Logger.Error("Could not get decisions from LAPI. (startup: {0})", startup);
                     Task.Delay(intervalms).Wait();
                     continue;
+                }
+                if (startup)
+                {
+                    startup = false;
                 }
                 firewall.UpdateRule(decisions);
                 Task.Delay(intervalms).Wait();
