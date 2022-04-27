@@ -3,7 +3,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>crowdsec-windows-firewall-bouncer</id>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <packageSourceUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer/tree/main/Chocolatey/crowdsec-windows-firewall-bouncer</packageSourceUrl>
     <owners>CrowdSecurity</owners>
     <!-- ============================== -->
