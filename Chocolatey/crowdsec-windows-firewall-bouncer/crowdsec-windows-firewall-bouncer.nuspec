@@ -4,7 +4,7 @@
   <metadata>
     <id>crowdsec-windows-firewall-bouncer</id>
     <version>0.0.3</version>
-    <packageSourceUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer</packageSourceUrl>
+    <packageSourceUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer/tree/main/Chocolatey/crowdsec-windows-firewall-bouncer</packageSourceUrl>
     <owners>CrowdSecurity</owners>
     <!-- ============================== -->
 
@@ -17,11 +17,21 @@
     <licenseUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer/blob/main/LICENSE</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer</projectSourceUrl>
-    <docsUrl>https://docs.crowdsec.net</docsUrl>
+    <docsUrl>https://docs.crowdsec.net/docs/next/bouncers/windows_firewall</docsUrl>
     <bugTrackerUrl>https://github.com/crowdsecurity/cs-windows-firewall-bouncer/issues</bugTrackerUrl>
     <tags>crowdsec-windows-firewall-bouncer crowdsec bouncer firewall</tags>
     <summary>CrowdSec bouncer for the Windows Firewall</summary>
-    <description>Crowdsec bouncer for the Windows Firewall. It requires a working CrowdSec installation to work.</description>
+    <description>
+      Crowdsec bouncer for the Windows Firewall.
+      
+      The bouncer will create and manage rules in the Windows Firewall based on the IPs that are blocked by CrowdSec.
+
+      ### Notes
+
+       - The bouncer requires a working [CrowdSec](https://github.com/crowdsecurity/crowdsec) installation.
+       - The bouncer will automatically try to register itself in LAPI if `cscli.exe` is found. If not, you will need to manually create an API key.
+
+    </description>
     <releaseNotes>See https://github.com/crowdsecurity/cs-windows-firewall-bouncer/releases</releaseNotes>
     <!-- =============================== -->
 
