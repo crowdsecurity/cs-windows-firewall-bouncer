@@ -42,7 +42,7 @@ namespace Fw
             if (r)
             {
                 Length--;
-                stale = false;
+                stale = true;
             }
             return r;
         }
