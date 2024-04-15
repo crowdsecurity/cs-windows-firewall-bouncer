@@ -44,6 +44,7 @@ jobs:
             dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
         - run: "nuget restore ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln"
         - name: Build and analyze
+          if: ${{ github.actor != 'dependabot[bot]' }}
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -52,3 +53,8 @@ jobs:
             .\.sonar\scanner\dotnet-sonarscanner begin /k:"crowdsecurity_cs-windows-firewall-bouncer" /o:"crowdsecurity" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
             msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-bouncer:rebuild -property:Configuration=Release
             .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        - name: Build
+          if: ${{ github.actor == 'dependabot[bot]' }}
+          shell: powershell
+          run: |
+            msbuild ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-bouncer:rebuild -property:Configuration=Release
