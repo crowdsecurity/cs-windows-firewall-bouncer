@@ -6,9 +6,20 @@
 <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
 <?endif?>
 
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
   <Package Name="CrowdSec Windows Firewall Bouncer" Language="1033" Version="0.0.5" Manufacturer="CrowdSecurity" UpgradeCode="bb1f577d-4045-4334-a56b-94a35608e8c6" InstallerVersion="200"><MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." Schedule="afterInstallExecute" />
-    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+	  
+	  <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+	  <netfx:DotNetCompatibilityCheck
+		  RuntimeType="core"
+        Property="DOTNETRUNTIMECHECK"
+        RollForward="major"
+        Platform="x64"
+        Version="8.0.0"
+      />
+
+	  <Launch Condition="Installed OR DOTNETRUNTIMECHECK=&quot;0&quot;" Message=".NET runtime 8.0 is required" />
 
     <Feature Id="ProductFeature" Title="CrowdSec Windows Firewall Bouncer" Level="1">
       <ComponentRef Id="bouncerexe_service_start" />
