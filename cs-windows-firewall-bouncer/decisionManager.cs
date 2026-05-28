@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Api;
@@ -12,11 +13,13 @@ namespace Manager
         private readonly ApiClient apiClient;
         private readonly Firewall firewall;
         private readonly int interval;
+        private readonly HashSet<string> supportedDecisionTypes;
 
         private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         public DecisionsManager(BouncerConfig config)
         {
             apiClient = new(config.config.ApiKey, config.config.ApiEndpoint);
+            supportedDecisionTypes = new HashSet<string>(config.config.SupportedDecisionTypes, StringComparer.OrdinalIgnoreCase);
             interval = config.config.UpdateFrequency;
             if (interval <= 0)
             {
@@ -29,6 +32,14 @@ namespace Manager
                 throw new Exception("Firewall is not enabled for the current profile, the bouncer won't work.");
             }
             Logger.Debug("Firewall is enabled for profile {0}", firewall.GetCurrentProfile());
+            if (supportedDecisionTypes.Count == 0)
+            {
+                Logger.Info("Supporting all decision types");
+            }
+            else
+            {
+                Logger.Info("Supporting decision types: {0}", string.Join(", ", supportedDecisionTypes));
+            }
         }
 
         public async Task<bool> Run()
@@ -48,6 +59,7 @@ namespace Manager
                 {
                     startup = false;
                 }
+                decisions = DecisionFilter.KeepSupportedTypes(decisions, supportedDecisionTypes);
                 firewall.UpdateRule(decisions);
                 Task.Delay(intervalms).Wait();
             }

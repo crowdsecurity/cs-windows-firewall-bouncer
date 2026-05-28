@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -14,8 +15,26 @@ namespace Cfg
         public string LogMedia { get; set; }
         public string LogDir { get; set; }
         public List<string> FwProfiles { get; set; }
+        public List<string> SupportedDecisionTypes { get; set; }
 
+        public void Normalize()
+        {
+            SupportedDecisionTypes = NormalizeList(SupportedDecisionTypes);
+        }
 
+        private static List<string> NormalizeList(List<string> values)
+        {
+            if (values == null)
+            {
+                return new List<string>();
+            }
+
+            return values
+                .Select(value => value?.Trim())
+                .Where(value => !string.IsNullOrEmpty(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
     }
 
     public class BouncerConfig
@@ -38,6 +57,7 @@ namespace Cfg
             {
                 config = deserializer.Deserialize<Config>(reader.ReadToEnd());
             }
+            config.Normalize();
         }
     }
 
