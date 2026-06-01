@@ -1,6 +1,8 @@
 <Project Sdk="WixToolset.Sdk/6.0.0">
   <PropertyGroup>
     <OutputName>cs_windows_firewall_bouncer_setup</OutputName>
+    <Version Condition="'$(Version)' == ''">0.0.0</Version>
+    <DefineConstants>BuildVersion=$(Version)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DefineConstants>Debug</DefineConstants>

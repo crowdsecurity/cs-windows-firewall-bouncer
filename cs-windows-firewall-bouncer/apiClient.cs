@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
@@ -48,7 +49,8 @@ namespace Api
                 this.apiEndpoint = apiEndpoint + '/';
             }
             client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
-            client.DefaultRequestHeaders.Add("User-Agent", "cs-windows-fw-bouncer/0.0.5");
+            var version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            client.DefaultRequestHeaders.Add("User-Agent", $"cs-windows-fw-bouncer/{version}");
         }
 
         public async Task<DecisionStreamResponse> GetDecisions(bool startup)
