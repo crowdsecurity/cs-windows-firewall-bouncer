@@ -92,9 +92,9 @@ namespace Api
             {
                 var caCerts = new X509Certificate2Collection();
                 caCerts.ImportFromPemFile(caCertPath);
-                handler.ServerCertificateCustomValidationCallback = (_, cert, chain, errors) =>
+                handler.ServerCertificateCustomValidationCallback = (_, cert, chain, _) =>
                 {
-                    if (errors == SslPolicyErrors.None) return true;
+                    if (cert == null) return false;
                     chain.ChainPolicy.CustomTrustStore.Clear();
                     chain.ChainPolicy.CustomTrustStore.AddRange(caCerts);
                     chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
