@@ -33,10 +33,23 @@ namespace cs_windows_firewall_bouncer
         {
             Logger.Debug("Onstart service");
             mgr = new(config);
-            var _ = mgr.Run();
+            _ = RunLoopAsync();
             base.OnStart(args);
             Logger.Debug("Onstart service end");
 
+        }
+
+        private async Task RunLoopAsync()
+        {
+            try
+            {
+                await mgr.Run();
+            }
+            catch (Exception ex)
+            {
+                Logger.Fatal(ex, "Bouncer loop crashed, stopping service");
+                Stop();
+            }
         }
 
         protected override void OnStop()
