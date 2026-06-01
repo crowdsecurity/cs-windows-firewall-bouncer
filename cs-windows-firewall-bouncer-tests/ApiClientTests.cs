@@ -170,6 +170,18 @@ namespace cs_windows_firewall_bouncer_tests
             Assert.DoesNotContain("scenarios_containing", url);
             Assert.DoesNotContain("scenarios_not_containing", url);
             Assert.DoesNotContain("origins", url);
+            Assert.DoesNotContain("type=", url);
+        }
+
+        [Fact]
+        public async Task UsesSupportedDecisionTypeWhenSet()
+        {
+            var handler = RespondWith(HttpStatusCode.OK, "{\"new\":[],\"deleted\":[]}");
+            var client = new ApiClient("k", "http://localhost:8080", handler, supportedDecisionType: "ban");
+
+            await client.GetDecisions(startup: true);
+
+            Assert.Contains("type=ban", handler.LastRequest.RequestUri.ToString());
         }
 
         [Fact]

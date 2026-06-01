@@ -24,6 +24,7 @@ namespace Cfg
         public List<string> ScenariosContaining { get; set; }
         public List<string> ScenariosNotContaining { get; set; }
         public List<string> Origins { get; set; }
+        public string SupportedDecisionType { get; set; }
     }
 
     public class BouncerConfig
