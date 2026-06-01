@@ -53,7 +53,7 @@ namespace Manager
                 {
                     startup = false;
                 }
-                Task.Delay(intervalms).Wait();
+                await Task.Delay(intervalms);
             }
         }
     }
