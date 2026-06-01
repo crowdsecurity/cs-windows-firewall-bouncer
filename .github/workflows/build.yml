@@ -23,5 +23,11 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          msbuild ${env:GITHUB_WORKSPACE}\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-bouncer:rebuild -property:Configuration=Release
+          msbuild ${env:GITHUB_WORKSPACE}\cs-windows-firewall-bouncer.sln '-t:cs-windows-firewall-bouncer:rebuild;cs-windows-firewall-bouncer-tests:rebuild' -property:Configuration=Release
           if ($LASTEXITCODE -ne 0) { throw "msbuild failed with exit code $LASTEXITCODE" }
+      - name: Test
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          dotnet test ${env:GITHUB_WORKSPACE}\cs-windows-firewall-bouncer-tests\cs-windows-firewall-bouncer-tests.csproj --no-build --no-restore -c Release -p:Platform=x64 --logger "console;verbosity=normal"
+          if ($LASTEXITCODE -ne 0) { throw "dotnet test failed with exit code $LASTEXITCODE" }

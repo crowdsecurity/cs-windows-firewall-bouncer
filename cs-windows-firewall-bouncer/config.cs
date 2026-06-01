@@ -20,24 +20,27 @@ namespace Cfg
 
     public class BouncerConfig
     {
-        private readonly string configPath;
         public Config config { get; set; }
+
         public BouncerConfig(string configPath)
         {
-            this.configPath = configPath;
-            this.loadConfig();
+            using var reader = new System.IO.StreamReader(configPath);
+            config = Deserialize(reader.ReadToEnd());
         }
 
-        private void loadConfig()
+        private BouncerConfig() { }
+
+        public static BouncerConfig FromString(string yaml)
+        {
+            return new BouncerConfig { config = Deserialize(yaml) };
+        }
+
+        private static Config Deserialize(string yaml)
         {
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build();
-
-            using (var reader = new System.IO.StreamReader(this.configPath))
-            {
-                config = deserializer.Deserialize<Config>(reader.ReadToEnd());
-            }
+            return deserializer.Deserialize<Config>(yaml);
         }
     }
 

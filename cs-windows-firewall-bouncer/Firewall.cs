@@ -67,7 +67,7 @@ namespace Fw
         }
     }
 
-    public class Firewall
+    public class Firewall : IFirewall
     {
         private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
