@@ -17,7 +17,17 @@ namespace Manager
         private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         public DecisionsManager(BouncerConfig config, IFirewall firewall = null, ApiClient apiClient = null)
         {
-            this.apiClient = apiClient ?? new ApiClient(config.config.ApiKey, config.config.ApiEndpoint);
+            this.apiClient = apiClient ?? new ApiClient(
+                config.config.ApiKey,
+                config.config.ApiEndpoint,
+                certPath: config.config.CertPath,
+                keyPath: config.config.KeyPath,
+                caCertPath: config.config.CaCertPath,
+                insecureSkipVerify: config.config.InsecureSkipVerify,
+                scopes: config.config.Scopes,
+                scenariosContaining: config.config.ScenariosContaining,
+                scenariosNotContaining: config.config.ScenariosNotContaining,
+                origins: config.config.Origins);
             interval = config.config.UpdateFrequency;
             if (interval <= 0)
             {

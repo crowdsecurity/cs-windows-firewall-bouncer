@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -44,7 +45,7 @@ namespace cs_windows_firewall_bouncer_tests
             var url = handler.LastRequest.RequestUri.ToString();
             Assert.Contains("/v1/decisions/stream", url);
             Assert.Contains("startup=true", url);
-            Assert.Contains("scope=ip,range", url);
+            Assert.Contains("scopes=ip,range", url);
         }
 
         [Fact]
@@ -133,6 +134,42 @@ namespace cs_windows_firewall_bouncer_tests
             var result = await client.GetDecisions(startup: true);
 
             Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UsesConfiguredScopesAndFilters()
+        {
+            var handler = RespondWith(HttpStatusCode.OK, "{\"new\":[],\"deleted\":[]}");
+            var client = new ApiClient(
+                "k", "http://localhost:8080", handler,
+                scopes: new List<string> { "ip" },
+                scenariosContaining: new List<string> { "crowdsecurity/http-bf", "ssh" },
+                scenariosNotContaining: new List<string> { "captcha" },
+                origins: new List<string> { "crowdsec", "cscli" });
+
+            await client.GetDecisions(startup: true);
+
+            var url = handler.LastRequest.RequestUri.ToString();
+            Assert.Contains("scopes=ip", url);
+            Assert.DoesNotContain("scopes=ip,range", url);
+            Assert.Contains("scenarios_containing=crowdsecurity%2Fhttp-bf,ssh", url);
+            Assert.Contains("scenarios_not_containing=captcha", url);
+            Assert.Contains("origins=crowdsec,cscli", url);
+        }
+
+        [Fact]
+        public async Task OmitsFilterParamsWhenNotConfigured()
+        {
+            var handler = RespondWith(HttpStatusCode.OK, "{\"new\":[],\"deleted\":[]}");
+            var client = new ApiClient("k", "http://localhost:8080", handler);
+
+            await client.GetDecisions(startup: true);
+
+            var url = handler.LastRequest.RequestUri.ToString();
+            Assert.Contains("scopes=ip,range", url);
+            Assert.DoesNotContain("scenarios_containing", url);
+            Assert.DoesNotContain("scenarios_not_containing", url);
+            Assert.DoesNotContain("origins", url);
         }
 
         [Fact]
