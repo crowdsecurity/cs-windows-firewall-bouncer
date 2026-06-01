@@ -47,7 +47,7 @@ stages:
 
           - pwsh: |
               SignClient.exe Sign  --name "windows-firewall-bouncer.exe" `
-              --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net8.0-windows) `
+              --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net10.0-windows) `
               --input "*.{exe,dll}" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
               --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
             displayName: "Sign bouncer binary"

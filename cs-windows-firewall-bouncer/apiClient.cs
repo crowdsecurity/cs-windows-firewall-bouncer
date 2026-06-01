@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Net.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 
 namespace Api
@@ -22,9 +23,9 @@ namespace Api
 
     public class DecisionStreamResponse
     {
-        [JsonProperty("new")]
+        [JsonPropertyName("new")]
         public List<Decision> New { get; set; }
-        [JsonProperty("deleted")]
+        [JsonPropertyName("deleted")]
         public List<Decision> Deleted { get; set; }
     }
 
@@ -67,7 +68,7 @@ namespace Api
             }
             var body = await response.Content.ReadAsStringAsync();
             Logger.Trace("LAPI response: {0}", body);
-            var decisions = JsonConvert.DeserializeObject<DecisionStreamResponse>(body);
+            var decisions = JsonSerializer.Deserialize<DecisionStreamResponse>(body);
             if (decisions.New == null)
             {
                 decisions.New = new List<Decision>();
