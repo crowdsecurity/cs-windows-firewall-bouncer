@@ -9,7 +9,7 @@
 
 
 # Windows Firewall Bouncer
-Crowdsec bouncer written in golang for the Windows firewall.
+Crowdsec bouncer for the Windows firewall, written in C# / .NET.
 
 The bouncer will fetch new and old decisions from a CrowdSec API to add them in a blocklist used by the Windows firewall.
 
