@@ -15,7 +15,15 @@ namespace Cfg
         public string LogDir { get; set; }
         public List<string> FwProfiles { get; set; }
 
+        public string CertPath { get; set; }
+        public string KeyPath { get; set; }
+        public string CaCertPath { get; set; }
+        public bool InsecureSkipVerify { get; set; }
 
+        public List<string> Scopes { get; set; }
+        public List<string> ScenariosContaining { get; set; }
+        public List<string> ScenariosNotContaining { get; set; }
+        public List<string> Origins { get; set; }
     }
 
     public class BouncerConfig
