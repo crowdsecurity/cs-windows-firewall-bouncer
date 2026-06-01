@@ -184,9 +184,9 @@ stages:
           - task: ManualValidation@0
             displayName: "Approve publish"
             inputs:
-              instructions: 'Review the signed_msi and signed_nupkg artifacts from the Sign stage, then approve to publish to GitHub Releases and Chocolatey.'
+              instructions: 'Review the signed_msi and signed_nupkg artifacts from the Sign stage, then approve to attach them to the GitHub release.'
       - deployment: "Publish"
-        displayName: "Publish to GitHub and Chocolatey"
+        displayName: "Publish to GitHub"
         dependsOn: WaitForPublishApproval
         environment: github
         strategy:
@@ -203,12 +203,6 @@ stages:
                     tag=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/crowdsecurity/cs-windows-firewall-bouncer/releases | jq -r '. | map(select(.prerelease==true)) | sort_by(.created_at) | reverse | .[0].tag_name')
                     echo "##vso[task.setvariable variable=LatestPreRelease;isOutput=true]$tag"
                   name: GetLatestPrerelease
-                - task: AzureKeyVault@2
-                  displayName: "Get Chocolatey API key"
-                  inputs:
-                    azureSubscription: "Azure subscription"
-                    KeyVaultName: "$(KeyVaultName)"
-                    SecretsFilter: 'ChocolateyAPIKey'
                 - task: GitHubRelease@1
                   displayName: "Attach assets to GitHub release"
                   inputs:
@@ -221,9 +215,4 @@ stages:
                     assets: |
                       $(Pipeline.Workspace)/signed_msi/*.msi
                       $(Pipeline.Workspace)/signed_nupkg/*.nupkg
-                  condition: ne(variables['GetLatestPrerelease.LatestPreRelease'], '')
-                - pwsh: |
-                    choco apikey --key $(ChocolateyAPIKey) --source https://push.chocolatey.org/
-                    choco push $(Pipeline.Workspace)\signed_nupkg\crowdsec-windows-firewall-bouncer.$(BuildVersion).nupkg --source https://push.chocolatey.org/
-                  displayName: "Push to Chocolatey"
                   condition: ne(variables['GetLatestPrerelease.LatestPreRelease'], '')
