@@ -6,6 +6,7 @@ using CommandLine;
 using Fw;
 using Cfg;
 using Manager;
+using Telemetry;
 
 namespace cs_windows_firewall_bouncer
 {
@@ -168,8 +169,17 @@ namespace cs_windows_firewall_bouncer
             else
             {
                 Logger.Info("Running in interactive mode");
+                var metrics = new MetricsServer(config.config.Prometheus);
+                metrics.Start();
                 DecisionsManager mgr = new(config);
-                await mgr.Run();
+                try
+                {
+                    await mgr.Run();
+                }
+                finally
+                {
+                    metrics.Stop();
+                }
             }
         }
     }

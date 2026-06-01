@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Cfg;
 using Fw;
 using Manager;
+using Telemetry;
 
 namespace cs_windows_firewall_bouncer
 {
@@ -22,6 +23,7 @@ namespace cs_windows_firewall_bouncer
 
         BouncerConfig config;
         DecisionsManager mgr;
+        MetricsServer metrics;
         CancellationTokenSource cts;
         Task runLoop;
         public Service(BouncerConfig config)
@@ -35,6 +37,8 @@ namespace cs_windows_firewall_bouncer
         protected override void OnStart(string[] args)
         {
             Logger.Debug("Onstart service");
+            metrics = new MetricsServer(config.config.Prometheus);
+            metrics.Start();
             mgr = new(config);
             cts = new CancellationTokenSource();
             runLoop = RunLoopAsync();
@@ -65,6 +69,7 @@ namespace cs_windows_firewall_bouncer
                 runLoop?.Wait(TimeSpan.FromSeconds(5));
             }
             catch (AggregateException) { }
+            metrics?.Stop();
             Firewall firewall = new(null);
             firewall.DeleteAllRules();
             cts?.Dispose();

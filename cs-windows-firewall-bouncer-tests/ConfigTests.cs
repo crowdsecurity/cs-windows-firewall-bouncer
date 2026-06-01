@@ -31,6 +31,72 @@ fw_profiles:
         }
 
         [Fact]
+        public void ParsesPrometheusConfig()
+        {
+            const string yaml = @"
+api_endpoint: http://localhost:8080
+api_key: k
+log_media: file
+prometheus:
+  enabled: true
+  listen_addr: 0.0.0.0
+  listen_port: 60601
+";
+            var cfg = BouncerConfig.FromString(yaml).config;
+
+            Assert.NotNull(cfg.Prometheus);
+            Assert.True(cfg.Prometheus.Enabled);
+            Assert.Equal("0.0.0.0", cfg.Prometheus.ListenAddr);
+            Assert.Equal(60601, cfg.Prometheus.ListenPort);
+        }
+
+        [Fact]
+        public void PrometheusEnabledIsNullWhenOmitted()
+        {
+            // A null Enabled is treated as enabled by MetricsServer (on by default, opt-out).
+            const string yaml = @"
+api_endpoint: http://localhost:8080
+api_key: k
+log_media: file
+prometheus:
+  listen_port: 60601
+";
+            var cfg = BouncerConfig.FromString(yaml).config;
+
+            Assert.NotNull(cfg.Prometheus);
+            Assert.Null(cfg.Prometheus.Enabled);
+            Assert.Equal(60601, cfg.Prometheus.ListenPort);
+        }
+
+        [Fact]
+        public void ParsesDisabledPrometheusConfig()
+        {
+            const string yaml = @"
+api_endpoint: http://localhost:8080
+api_key: k
+log_media: file
+prometheus:
+  enabled: false
+";
+            var cfg = BouncerConfig.FromString(yaml).config;
+
+            Assert.NotNull(cfg.Prometheus);
+            Assert.False(cfg.Prometheus.Enabled);
+        }
+
+        [Fact]
+        public void ParsesConfigWithoutPrometheusBlock()
+        {
+            const string yaml = @"
+api_endpoint: http://localhost:8080
+api_key: k
+log_media: file
+";
+            var cfg = BouncerConfig.FromString(yaml).config;
+            Assert.Null(cfg.Prometheus);
+        }
+
+        [Fact]
         public void ParsesMinimalConfig()
         {
             const string yaml = @"

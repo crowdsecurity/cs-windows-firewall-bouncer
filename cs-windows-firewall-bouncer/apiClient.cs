@@ -10,6 +10,8 @@ using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 
+using Telemetry;
+
 namespace Api
 {
 
@@ -145,6 +147,7 @@ namespace Api
                 Logger.Trace("requesting {0}", uri);
                 response = await client.GetAsync(uri, ct);
                 response.EnsureSuccessStatusCode();
+                BouncerMetrics.LapiRequests.WithLabels("success").Inc();
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -152,6 +155,7 @@ namespace Api
             }
             catch (Exception ex)
             {
+                BouncerMetrics.LapiRequests.WithLabels("error").Inc();
                 Logger.Error("Could not get decisions: {0}", ex.Message);
                 return null;
             }

@@ -25,6 +25,16 @@ namespace Cfg
         public List<string> ScenariosNotContaining { get; set; }
         public List<string> Origins { get; set; }
         public string SupportedDecisionType { get; set; }
+
+        public PrometheusConfig Prometheus { get; set; }
+    }
+
+    public class PrometheusConfig
+    {
+        // Nullable so an absent value defaults to enabled, while "enabled: false" still opts out.
+        public bool? Enabled { get; set; }
+        public string ListenAddr { get; set; }
+        public int ListenPort { get; set; }
     }
 
     public class BouncerConfig
