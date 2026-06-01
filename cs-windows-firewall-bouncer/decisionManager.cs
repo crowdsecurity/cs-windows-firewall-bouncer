@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Api;
@@ -31,9 +32,9 @@ namespace Manager
             Logger.Debug("Firewall is enabled for profile {0}", this.firewall.GetCurrentProfile());
         }
 
-        public async Task RunOnce(bool startup)
+        public async Task RunOnce(bool startup, CancellationToken ct = default)
         {
-            var decisions = await apiClient.GetDecisions(startup);
+            var decisions = await apiClient.GetDecisions(startup, ct);
             if (decisions == null)
             {
                 Logger.Error("Could not get decisions from LAPI. (startup: {0})", startup);
@@ -42,19 +43,27 @@ namespace Manager
             firewall.UpdateRule(decisions);
         }
 
-        public async Task<bool> Run()
+        public async Task Run(CancellationToken ct = default)
         {
             var intervalms = this.interval * 1000;
             var startup = true;
-            while (true)
+            while (!ct.IsCancellationRequested)
             {
-                await RunOnce(startup);
-                if (startup)
+                try
                 {
-                    startup = false;
+                    await RunOnce(startup, ct);
+                    if (startup)
+                    {
+                        startup = false;
+                    }
+                    await Task.Delay(intervalms, ct);
                 }
-                Task.Delay(intervalms).Wait();
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    break;
+                }
             }
+            Logger.Info("Bouncer loop exiting (cancellation requested)");
         }
     }
 }

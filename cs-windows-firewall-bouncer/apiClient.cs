@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Reflection;
@@ -53,7 +54,7 @@ namespace Api
             client.DefaultRequestHeaders.Add("User-Agent", $"cs-windows-fw-bouncer/{version}");
         }
 
-        public async Task<DecisionStreamResponse> GetDecisions(bool startup)
+        public async Task<DecisionStreamResponse> GetDecisions(bool startup, CancellationToken ct = default)
         {
             Logger.Debug("starting GetDecisions");
             HttpResponseMessage response;
@@ -61,15 +62,19 @@ namespace Api
             {
                 var uri = apiEndpoint + "v1/decisions/stream?startup=" + startup.ToString().ToLower() + "&scope=ip,range";
                 Logger.Trace("requesting {0}", uri);
-                response = await client.GetAsync(uri);
+                response = await client.GetAsync(uri, ct);
                 response.EnsureSuccessStatusCode();
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 Logger.Error("Could not get decisions: {0}", ex.Message);
                 return null;
             }
-            var body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync(ct);
             Logger.Trace("LAPI response: {0}", body);
             var decisions = JsonSerializer.Deserialize<DecisionStreamResponse>(body);
             if (decisions.New == null)
