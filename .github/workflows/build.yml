@@ -29,5 +29,5 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          dotnet test ${env:GITHUB_WORKSPACE}\cs-windows-firewall-bouncer-tests\cs-windows-firewall-bouncer-tests.csproj --no-build --no-restore -c Release --logger "console;verbosity=normal"
+          dotnet test ${env:GITHUB_WORKSPACE}\cs-windows-firewall-bouncer-tests\cs-windows-firewall-bouncer-tests.csproj --no-build --no-restore -c Release -p:Platform=x64 --logger "console;verbosity=normal"
           if ($LASTEXITCODE -ne 0) { throw "dotnet test failed with exit code $LASTEXITCODE" }
