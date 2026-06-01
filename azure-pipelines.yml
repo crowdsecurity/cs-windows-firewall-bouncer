@@ -62,7 +62,7 @@ stages:
         pool: server
         timeoutInMinutes: 1440
         steps:
-          - task: ManualIntervention@8
+          - task: ManualValidation@0
             displayName: "Approve signing"
             inputs:
               instructions: 'Review the unsigned_binaries artifact from the Build stage, then approve to start signing with the production certificate.'
@@ -178,7 +178,7 @@ stages:
         pool: server
         timeoutInMinutes: 1440
         steps:
-          - task: ManualIntervention@8
+          - task: ManualValidation@0
             displayName: "Approve publish"
             inputs:
               instructions: 'Review the signed_msi and signed_nupkg artifacts from the Sign stage, then approve to publish to GitHub Releases and Chocolatey.'
