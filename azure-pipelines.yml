@@ -85,7 +85,7 @@ stages:
             inputs:
               command: 'custom'
               custom: 'tool'
-              arguments: install --global sign --version 1.1.5
+              arguments: install --global sign --version 0.9.1-beta.26227.3
 
           - task: AzureKeyVault@2
             displayName: "Get signing parameters"
