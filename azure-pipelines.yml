@@ -47,7 +47,7 @@ stages:
 
           - pwsh: |
               SignClient.exe Sign  --name "windows-firewall-bouncer.exe" `
-              --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net6.0-windows) `
+              --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net8.0-windows) `
               --input "*.{exe,dll}" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
               --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
             displayName: "Sign bouncer binary"
@@ -57,7 +57,7 @@ stages:
             inputs:
               solution: 'cs-windows-firewall-bouncer.sln'
               vsVersion: '17.0'
-              msbuildArgs: '-t:cs-windows-firewall-installer-bundle /p:RunWixToolsOutOfProc=true'
+              msbuildArgs: '-t:cs-windows-firewall-bouncer-setup /p:RunWixToolsOutOfProc=true'
               platform: 'x64'
               configuration: 'Release'
 
@@ -67,34 +67,13 @@ stages:
               --input "*.msi" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
               --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
             displayName: "Sign MSI"
-          
-          - pwsh: |
-              $env:Path += ";C:\Program Files (x86)\WiX Toolset v3.11\bin"
-              New-Item -type Directory bundle_sign
-              insignia.exe -ib (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)  -o bundle_sign\\engine.exe
-              SignClient.exe Sign --name "windows-firewall-bouncer-bundle-engine.exe" `
-              --input "bundle_sign\\engine.exe" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
-              --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
-              insignia.exe -ab bundle_sign\\engine.exe (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe) `
-              -o (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe)
-              SignClient.exe Sign --name "windows-firewall-bouncer-bundle.exe" `
-              --baseDirectory (Join-Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-installer-bundle\\bin\\Release) --input "*.exe" `
-              --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
-              --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
-            displayName: "Sign bundle"
+
           - pwsh: |
               $build_version=("$(Build.SourceBranch)".Split('/')[2].Substring(1))
               .\make_choco.ps1
               Write-Host  "##vso[task.setvariable variable=BuildVersion;isOutput=true]$build_version"
             displayName: "Build chocolatey package"
             name: "chocoBuild"
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(Build.Repository.LocalPath)\\cs-windows-firewall-installer-bundle\\bin\\Release\\cs_windows_firewall_installer_bundle.exe'
-              ArtifactName: 'cs_windows_firewall_installer_bundle.exe'
-              publishLocation: 'Container'
-            displayName: "Upload bundle artifact"
-
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: '$(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi'
@@ -140,7 +119,6 @@ stages:
                     #the .. is an ugly hack, but I can't find the var that gives D:\a\1 ...
                     assets: |
                       $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.msi\cs_windows_firewall_bouncer_setup.msi
-                      $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_installer_bundle.exe\cs_windows_firewall_installer_bundle.exe
                   condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
                 - pwsh: |
                    choco apikey --key $(ChocolateyAPIKey) --source https://push.chocolatey.org/
