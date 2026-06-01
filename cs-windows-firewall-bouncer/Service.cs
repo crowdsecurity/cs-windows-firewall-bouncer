@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Cfg;
@@ -21,6 +22,8 @@ namespace cs_windows_firewall_bouncer
 
         BouncerConfig config;
         DecisionsManager mgr;
+        CancellationTokenSource cts;
+        Task runLoop;
         public Service(BouncerConfig config)
         {
             Logger.Debug("Creating new service object");
@@ -33,7 +36,8 @@ namespace cs_windows_firewall_bouncer
         {
             Logger.Debug("Onstart service");
             mgr = new(config);
-            _ = RunLoopAsync();
+            cts = new CancellationTokenSource();
+            runLoop = RunLoopAsync();
             base.OnStart(args);
             Logger.Debug("Onstart service end");
 
@@ -43,7 +47,7 @@ namespace cs_windows_firewall_bouncer
         {
             try
             {
-                await mgr.Run();
+                await mgr.Run(cts.Token);
             }
             catch (Exception ex)
             {
@@ -55,8 +59,15 @@ namespace cs_windows_firewall_bouncer
         protected override void OnStop()
         {
             Logger.Debug("Onstop service");
+            cts?.Cancel();
+            try
+            {
+                runLoop?.Wait(TimeSpan.FromSeconds(5));
+            }
+            catch (AggregateException) { }
             Firewall firewall = new(null);
             firewall.DeleteAllRules();
+            cts?.Dispose();
             Logger.Debug("Onstop service end");
         }
     }
