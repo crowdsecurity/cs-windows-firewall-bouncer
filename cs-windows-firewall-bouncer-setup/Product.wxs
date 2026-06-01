@@ -16,10 +16,10 @@
         Property="DOTNETRUNTIMECHECK"
         RollForward="major"
         Platform="x64"
-        Version="8.0.0"
+        Version="10.0.0"
       />
 
-	  <Launch Condition="Installed OR DOTNETRUNTIMECHECK=&quot;0&quot;" Message=".NET runtime 8.0 is required" />
+	  <Launch Condition="Installed OR DOTNETRUNTIMECHECK=&quot;0&quot;" Message=".NET runtime 10.0 is required" />
 
     <Feature Id="ProductFeature" Title="CrowdSec Windows Firewall Bouncer" Level="1">
       <ComponentRef Id="bouncerexe_service_start" />
@@ -124,9 +124,9 @@
                 <File Id="yaml.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\YamlDotNet.dll" Name="YamlDotNet.dll" />
                 <File Id="commandline.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\CommandLine.dll" Name="CommandLine.dll" />
                 <File Id="bouncer.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\cs-windows-firewall-bouncer.dll" Name="cs-windows-firewall-bouncer.dll" />
-                <File Id="service.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\runtimes\win\lib\net8.0\System.ServiceProcess.ServiceController.dll" Name="System.ServiceProcess.ServiceController.dll" />
-                <File Id="eventlog.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll" Name="System.Diagnostics.EventLog.dll" />
-                <File Id="eventlog_message.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll" Name="System.Diagnostics.EventLog.Messages.dll" />
+                <File Id="service.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\runtimes\win\lib\net10.0\System.ServiceProcess.ServiceController.dll" Name="System.ServiceProcess.ServiceController.dll" />
+                <File Id="eventlog.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\runtimes\win\lib\net10.0\System.Diagnostics.EventLog.dll" Name="System.Diagnostics.EventLog.dll" />
+                <File Id="eventlog_message.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\runtimes\win\lib\net10.0\System.Diagnostics.EventLog.Messages.dll" Name="System.Diagnostics.EventLog.Messages.dll" />
                 <File Id="runtimeconfig.json" Source="$(cs_windows_firewall_bouncer.TargetDir)\cs-windows-firewall-bouncer.runtimeconfig.json" Name="cs-windows-firewall-bouncer.runtimeconfig.json" />
               </Component>
             </Directory>
