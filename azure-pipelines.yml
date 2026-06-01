@@ -17,111 +17,210 @@ stages:
         displayName: "Build"
         steps:
           - pwsh: |
-              nuget restore $(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer.sln
-            displayName: "restore build deps"
-          - task: DotNetCoreCLI@2
-            displayName: "Install SignClient"
-            inputs:
-              command: 'custom'
-              custom: 'tool'
-              arguments: 'install --global SignClient --version 1.3.155'
+              nuget restore $(Build.Repository.LocalPath)\cs-windows-firewall-bouncer.sln
+            displayName: "Restore build deps"
+
           - task: VSBuild@1
             displayName: "Build bouncer"
             inputs:
-              solution: '$(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer.sln'
+              solution: '$(Build.Repository.LocalPath)\cs-windows-firewall-bouncer.sln'
               vsVersion: '17.0'
               msbuildArgs: '-t:cs-windows-firewall-bouncer:rebuild'
               platform: 'x64'
               configuration: 'Release'
 
-          - task: AzureKeyVault@2
-            inputs:
-              azureSubscription: 'Azure subscription 1(8a93ab40-7e99-445e-ad47-0f6a3e2ef546)'
-              KeyVaultName: 'CodeSigningSecrets'
-              SecretsFilter: 'CodeSigningUser,CodeSigningPassword'
-              RunAsPreJob: false
-
-          - task: DownloadSEcureFile@1
-            inputs:
-              secureFile: appsettings.json
+          - pwsh: |
+              $build_version = "$(Build.SourceBranchName)"
+              if ($build_version.StartsWith("v")) { $build_version = $build_version.Substring(1) }
+              Write-Host "##vso[task.setvariable variable=BuildVersion;isOutput=true]$build_version"
+            displayName: "Get build version"
+            name: GetVersion
 
           - pwsh: |
-              SignClient.exe Sign  --name "windows-firewall-bouncer.exe" `
-              --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer\\bin\\x64\\Release\\net10.0-windows) `
-              --input "*.{exe,dll}" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
-              --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
-            displayName: "Sign bouncer binary"
+              $src = "$(Build.Repository.LocalPath)\cs-windows-firewall-bouncer\bin\x64\Release\net10.0-windows"
+              $dst = "$(Build.ArtifactStagingDirectory)\cs-windows-firewall-bouncer\bin\x64\Release\net10.0-windows"
+              New-Item -ItemType Directory -Path $dst -Force | Out-Null
+              Copy-Item -Path "$src\*" -Destination $dst -Recurse
+            displayName: "Stage bouncer binaries"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload unsigned binaries artifact"
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              artifact: 'unsigned_binaries'
+
+  - stage: Sign
+    dependsOn: Build
+    condition: succeeded()
+    variables:
+      - group: 'FOSS Build Variables'
+      - name: BuildVersion
+        value: $[ stageDependencies.Build.Build.outputs['GetVersion.BuildVersion'] ]
+    jobs:
+      - job: WaitForSignApproval
+        displayName: "Wait for sign approval"
+        pool: server
+        timeoutInMinutes: 1440
+        steps:
+          - task: ManualIntervention@8
+            displayName: "Approve signing"
+            inputs:
+              instructions: 'Review the unsigned_binaries artifact from the Build stage, then approve to start signing with the production certificate.'
+      - job: Sign
+        displayName: "Sign"
+        dependsOn: WaitForSignApproval
+        steps:
+          - download: current
+            artifact: unsigned_binaries
+            displayName: "Download unsigned binaries"
+
+          - task: CopyFiles@2
+            displayName: "Restore binaries into workspace"
+            inputs:
+              SourceFolder: '$(Pipeline.Workspace)/unsigned_binaries'
+              TargetFolder: '$(Build.SourcesDirectory)'
+
+          - task: DotNetCoreCLI@2
+            displayName: "Install sign tool"
+            inputs:
+              command: 'custom'
+              custom: 'tool'
+              arguments: install --global sign --version 1.1.5
+
+          - task: AzureKeyVault@2
+            displayName: "Get signing parameters"
+            inputs:
+              azureSubscription: "Azure subscription"
+              KeyVaultName: "$(KeyVaultName)"
+              SecretsFilter: "TenantId,ClientId,ClientSecret,Certificate,KeyVaultUrl"
+
+          - pwsh: |
+              sign code azure-key-vault `
+              "*.{exe,dll}" `
+              --base-directory "$(Build.SourcesDirectory)\cs-windows-firewall-bouncer\bin\x64\Release\net10.0-windows" `
+              --publisher-name "CrowdSec" `
+              --description "CrowdSec Windows Firewall Bouncer" `
+              --description-url "https://github.com/crowdsecurity/cs-windows-firewall-bouncer" `
+              --azure-key-vault-tenant-id "$(TenantId)" `
+              --azure-key-vault-client-id "$(ClientId)" `
+              --azure-key-vault-client-secret "$(ClientSecret)" `
+              --azure-key-vault-certificate "$(Certificate)" `
+              --azure-key-vault-url "$(KeyVaultUrl)"
+            displayName: "Sign bouncer binaries"
+
+          - pwsh: |
+              nuget restore $(Build.SourcesDirectory)\cs-windows-firewall-bouncer.sln
+            displayName: "Restore build deps"
 
           - task: VSBuild@1
-            displayName: "Build installers"
+            displayName: "Build MSI"
             inputs:
-              solution: 'cs-windows-firewall-bouncer.sln'
+              solution: '$(Build.SourcesDirectory)\cs-windows-firewall-bouncer.sln'
               vsVersion: '17.0'
-              msbuildArgs: '-t:cs-windows-firewall-bouncer-setup /p:RunWixToolsOutOfProc=true'
+              msbuildArgs: '-t:cs-windows-firewall-bouncer-setup /p:BuildProjectReferences=false /p:RunWixToolsOutOfProc=true'
               platform: 'x64'
               configuration: 'Release'
 
           - pwsh: |
-              SignClient.exe Sign --name "windows-firewall-bouncer.msi" `
-              --baseDirectory (Join-Path -Path $(Build.Repository.LocalPath) -ChildPath cs-windows-firewall-bouncer-setup\\bin\\x64\\Release) `
-              --input "*.msi" --config (Join-Path -Path $(Agent.TempDirectory) -ChildPath "appsettings.json") `
-              --user $(CodeSigningUser) --secret '$(CodeSigningPassword)'
+              sign code azure-key-vault `
+              "*.msi" `
+              --base-directory "$(Build.SourcesDirectory)\cs-windows-firewall-bouncer-setup\bin\x64\Release" `
+              --publisher-name "CrowdSec" `
+              --description "CrowdSec Windows Firewall Bouncer" `
+              --description-url "https://github.com/crowdsecurity/cs-windows-firewall-bouncer" `
+              --azure-key-vault-tenant-id "$(TenantId)" `
+              --azure-key-vault-client-id "$(ClientId)" `
+              --azure-key-vault-client-secret "$(ClientSecret)" `
+              --azure-key-vault-certificate "$(Certificate)" `
+              --azure-key-vault-url "$(KeyVaultUrl)"
             displayName: "Sign MSI"
 
           - pwsh: |
-              $build_version=("$(Build.SourceBranch)".Split('/')[2].Substring(1))
               .\make_choco.ps1
-              Write-Host  "##vso[task.setvariable variable=BuildVersion;isOutput=true]$build_version"
-            displayName: "Build chocolatey package"
-            name: "chocoBuild"
-          - task: PublishBuildArtifacts@1
+            displayName: "Build Chocolatey package"
+
+          - pwsh: |
+              sign code azure-key-vault `
+              "*.nupkg" `
+              --base-directory "$(Build.SourcesDirectory)\Chocolatey\crowdsec-windows-firewall-bouncer" `
+              --publisher-name "CrowdSec" `
+              --description "CrowdSec Windows Firewall Bouncer" `
+              --description-url "https://github.com/crowdsecurity/cs-windows-firewall-bouncer" `
+              --azure-key-vault-tenant-id "$(TenantId)" `
+              --azure-key-vault-client-id "$(ClientId)" `
+              --azure-key-vault-client-secret "$(ClientSecret)" `
+              --azure-key-vault-certificate "$(Certificate)" `
+              --azure-key-vault-url "$(KeyVaultUrl)"
+            displayName: "Sign Chocolatey package"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload signed MSI artifact"
             inputs:
-              PathtoPublish: '$(Build.Repository.LocalPath)\\cs-windows-firewall-bouncer-setup\\bin\\x64\\Release\\cs_windows_firewall_bouncer_setup.msi'
-              ArtifactName: 'cs_windows_firewall_bouncer_setup.msi'
-              publishLocation: 'Container'
-            displayName: "Upload MSI artifact"
-          - task: PublishBuildArtifacts@1
+              targetPath: '$(Build.SourcesDirectory)\cs-windows-firewall-bouncer-setup\bin\x64\Release\cs_windows_firewall_bouncer_setup.msi'
+              artifact: 'signed_msi'
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload signed Chocolatey artifact"
             inputs:
-              PathtoPublish: '$(Build.Repository.LocalPath)\\Chocolatey\\crowdsec-windows-firewall-bouncer\\crowdsec-windows-firewall-bouncer.$(chocoBuild.BuildVersion).nupkg'
-              ArtifactName: 'cs_windows_firewall_bouncer_setup.nupkg'
-              publishLocation: 'Container'
-            displayName: "Upload Chocolatey nupkg"
+              targetPath: '$(Build.SourcesDirectory)\Chocolatey\crowdsec-windows-firewall-bouncer\crowdsec-windows-firewall-bouncer.$(BuildVersion).nupkg'
+              artifact: 'signed_nupkg'
+
   - stage: Publish
-    dependsOn: Build
+    dependsOn: Sign
+    condition: succeeded()
+    variables:
+      - group: 'FOSS Build Variables'
+      - name: BuildVersion
+        value: $[ stageDependencies.Build.Build.outputs['GetVersion.BuildVersion'] ]
     jobs:
+      - job: WaitForPublishApproval
+        displayName: "Wait for publish approval"
+        pool: server
+        timeoutInMinutes: 1440
+        steps:
+          - task: ManualIntervention@8
+            displayName: "Approve publish"
+            inputs:
+              instructions: 'Review the signed_msi and signed_nupkg artifacts from the Sign stage, then approve to publish to GitHub Releases and Chocolatey.'
       - deployment: "Publish"
-        displayName: "Publish to GitHub"
+        displayName: "Publish to GitHub and Chocolatey"
+        dependsOn: WaitForPublishApproval
         environment: github
-        variables:
-          BuildVersion: $[ stageDependencies.Build.Build.outputs['chocoBuild.BuildVersion'] ]
         strategy:
           runOnce:
             deploy:
               steps:
+                - download: current
+                  artifact: signed_msi
+                  displayName: "Download signed MSI"
+                - download: current
+                  artifact: signed_nupkg
+                  displayName: "Download signed Chocolatey package"
                 - bash: |
-                    tag=$(curl -H "Accept: application/vnd.github.v3+json"   https://api.github.com/repos/crowdsecurity/cs-windows-firewall-bouncer/releases | jq -r '. | map(select(.prerelease==true)) | sort_by(.created_at) | reverse | .[0].tag_name')
+                    tag=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/crowdsecurity/cs-windows-firewall-bouncer/releases | jq -r '. | map(select(.prerelease==true)) | sort_by(.created_at) | reverse | .[0].tag_name')
                     echo "##vso[task.setvariable variable=LatestPreRelease;isOutput=true]$tag"
-                  name: GetLatestPrelease
+                  name: GetLatestPrerelease
                 - task: AzureKeyVault@2
+                  displayName: "Get Chocolatey API key"
                   inputs:
-                    azureSubscription: 'Azure subscription 1(8a93ab40-7e99-445e-ad47-0f6a3e2ef546)'
-                    KeyVaultName: 'CodeSigningSecrets'
+                    azureSubscription: "Azure subscription"
+                    KeyVaultName: "$(KeyVaultName)"
                     SecretsFilter: 'ChocolateyAPIKey'
-                    RunAsPreJob: false
                 - task: GitHubRelease@1
+                  displayName: "Attach assets to GitHub release"
                   inputs:
                     gitHubConnection: "github.com_blotus"
                     repositoryName: '$(Build.Repository.Name)'
                     action: 'edit'
-                    tag: '$(GetLatestPrelease.LatestPreRelease)'
+                    tag: '$(GetLatestPrerelease.LatestPreRelease)'
                     assetUploadMode: 'replace'
                     isPreRelease: true #we force prerelease because the pipeline is invoked on tag creation, which happens when we do a prerelease
-                    #the .. is an ugly hack, but I can't find the var that gives D:\a\1 ...
                     assets: |
-                      $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.msi\cs_windows_firewall_bouncer_setup.msi
-                  condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
+                      $(Pipeline.Workspace)/signed_msi/*.msi
+                      $(Pipeline.Workspace)/signed_nupkg/*.nupkg
+                  condition: ne(variables['GetLatestPrerelease.LatestPreRelease'], '')
                 - pwsh: |
-                   choco apikey --key $(ChocolateyAPIKey) --source https://push.chocolatey.org/
-                   choco push $(Build.ArtifactStagingDirectory)\..\cs_windows_firewall_bouncer_setup.nupkg\crowdsec-windows-firewall-bouncer.$(BuildVersion).nupkg --source https://push.chocolatey.org/
+                    choco apikey --key $(ChocolateyAPIKey) --source https://push.chocolatey.org/
+                    choco push $(Pipeline.Workspace)\signed_nupkg\crowdsec-windows-firewall-bouncer.$(BuildVersion).nupkg --source https://push.chocolatey.org/
                   displayName: "Push to Chocolatey"
-                  condition: ne(variables['GetLatestPrelease.LatestPreRelease'], '')
+                  condition: ne(variables['GetLatestPrerelease.LatestPreRelease'], '')
