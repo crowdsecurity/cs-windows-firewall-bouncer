@@ -43,6 +43,7 @@ namespace Api
         private readonly List<string> scenariosContaining;
         private readonly List<string> scenariosNotContaining;
         private readonly List<string> origins;
+        private readonly string supportedDecisionType;
 
         private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -57,7 +58,8 @@ namespace Api
             List<string> scopes = null,
             List<string> scenariosContaining = null,
             List<string> scenariosNotContaining = null,
-            List<string> origins = null)
+            List<string> origins = null,
+            string supportedDecisionType = null)
         {
             client = handler != null
                 ? new HttpClient(handler)
@@ -75,6 +77,7 @@ namespace Api
             this.scenariosContaining = scenariosContaining;
             this.scenariosNotContaining = scenariosNotContaining;
             this.origins = origins;
+            this.supportedDecisionType = supportedDecisionType;
 
             client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
             var version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
@@ -133,6 +136,10 @@ namespace Api
                 if (origins?.Count > 0)
                 {
                     query.Add("origins=" + string.Join(",", origins.Select(Uri.EscapeDataString)));
+                }
+                if (!string.IsNullOrEmpty(supportedDecisionType))
+                {
+                    query.Add("type=" + Uri.EscapeDataString(supportedDecisionType));
                 }
                 var uri = apiEndpoint + "v1/decisions/stream?" + string.Join("&", query);
                 Logger.Trace("requesting {0}", uri);

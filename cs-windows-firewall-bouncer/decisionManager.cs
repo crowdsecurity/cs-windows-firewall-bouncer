@@ -27,7 +27,8 @@ namespace Manager
                 scopes: config.config.Scopes,
                 scenariosContaining: config.config.ScenariosContaining,
                 scenariosNotContaining: config.config.ScenariosNotContaining,
-                origins: config.config.Origins);
+                origins: config.config.Origins,
+                supportedDecisionType: config.config.SupportedDecisionType);
             interval = config.config.UpdateFrequency;
             if (interval <= 0)
             {
