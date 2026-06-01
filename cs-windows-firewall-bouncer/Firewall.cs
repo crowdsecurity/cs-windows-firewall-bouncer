@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Api;
+using Telemetry;
 
 namespace Fw
 {
@@ -191,7 +192,10 @@ namespace Fw
                     Logger.Trace("was not able to find a bucket for deleting {0}", decision.value);
                     continue;
                 }
-                bucket.RemoveIP(decision.value);
+                if (bucket.RemoveIP(decision.value))
+                {
+                    BouncerMetrics.Decisions.WithLabels("delete", decision.origin ?? "unknown").Inc();
+                }
             }
 
             foreach (var decision in decisions.New)
@@ -203,6 +207,7 @@ namespace Fw
                 }
                 var bucket = findAvailableBucket();
                 bucket.AddIP(decision.value);
+                BouncerMetrics.Decisions.WithLabels("add", decision.origin ?? "unknown").Inc();
             }
 
             List<FirewallRule> toDelete = new();
@@ -231,6 +236,9 @@ namespace Fw
             {
                 rulesBucket.Remove(fwRule);
             }
+
+            BouncerMetrics.FirewallRules.Set(rulesBucket.Count);
+            BouncerMetrics.ActiveDecisions.Set(rulesBucket.Sum(x => x.Length));
         }
 
         public void CreateRule(string name)

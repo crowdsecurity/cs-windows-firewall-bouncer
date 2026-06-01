@@ -3,3 +3,7 @@ api_key: ${API_KEY}
 update_frequency: 10
 log_media: file
 log_dir: C:\\ProgramData\\CrowdSec\\log\\
+prometheus:
+  enabled: true
+  listen_addr: 127.0.0.1
+  listen_port: 60601
