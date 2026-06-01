@@ -10,28 +10,28 @@ jobs:
       runs-on: windows-latest
       steps:
         - name: setup dotnet
-          uses: actions/setup-dotnet@v4
+          uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
         - name: Set up JDK 17
-          uses: actions/setup-java@v3
+          uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
           with:
             java-version: 17
             distribution: 'zulu' # Alternative distribution options are available.
         - name: Add msbuild to PATH
-          uses: microsoft/setup-msbuild@v2
+          uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0
           with:
             msbuild-architecture: x64
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
           with:
             fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
         - name: Cache SonarCloud packages
-          uses: actions/cache@v3
+          uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
           with:
             path: ~\sonar\cache
             key: ${{ runner.os }}-sonar
             restore-keys: ${{ runner.os }}-sonar
         - name: Cache SonarCloud scanner
           id: cache-sonar-scanner
-          uses: actions/cache@v3
+          uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
           with:
             path: .\.sonar\scanner
             key: ${{ runner.os }}-sonar-scanner
