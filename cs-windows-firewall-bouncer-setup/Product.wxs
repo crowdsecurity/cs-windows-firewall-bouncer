@@ -32,9 +32,11 @@
       <!-- Harvest every dependency from the bouncer build output (DLLs, runtimes\, .deps.json,
            runtimeconfig.json). The .exe is excluded because it is installed by the service
            components above; .pdb symbols are not shipped. -->
-      <Files Include="$(cs_windows_firewall_bouncer.TargetDir)\**"
-             Exclude="**\*.exe;**\*.pdb"
-             Directory="FirewallBouncerDir" />
+      <Files Directory="FirewallBouncerDir">
+        <Include Path="$(cs_windows_firewall_bouncer.TargetDir)\**" />
+        <Exclude Path="$(cs_windows_firewall_bouncer.TargetDir)\**\*.exe" />
+        <Exclude Path="$(cs_windows_firewall_bouncer.TargetDir)\**\*.pdb" />
+      </Files>
     </Feature>
 
     <Property Id="CSCLIPRESENT">
