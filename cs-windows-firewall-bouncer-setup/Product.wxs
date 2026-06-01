@@ -33,7 +33,7 @@
            runtimeconfig.json). The .exe is excluded because it is installed by the service
            components above; .pdb symbols are not shipped. -->
       <Files Include="$(cs_windows_firewall_bouncer.TargetDir)\**"
-             Exclude="$(cs_windows_firewall_bouncer.TargetDir)\**\*.exe;$(cs_windows_firewall_bouncer.TargetDir)\**\*.pdb"
+             Exclude="**\*.exe;**\*.pdb"
              Directory="FirewallBouncerDir" />
     </Feature>
 
