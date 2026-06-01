@@ -32,12 +32,13 @@ namespace Api
 
     public class ApiClient
     {
-        private readonly HttpClient client = new HttpClient();
+        private readonly HttpClient client;
         private readonly string apiEndpoint;
 
         private readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        public ApiClient(string apiKey, string apiEndpoint)
+        public ApiClient(string apiKey, string apiEndpoint, HttpMessageHandler handler = null)
         {
+            client = handler != null ? new HttpClient(handler) : new HttpClient();
             if (apiEndpoint.EndsWith('/'))
             {
                 this.apiEndpoint = apiEndpoint;
