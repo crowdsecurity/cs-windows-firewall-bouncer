@@ -14,9 +14,14 @@ jobs:
         uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
         with:
           dotnet-version: '10.0.x'
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3.0.0
+        with:
+          msbuild-architecture: x64
+      - run: "nuget restore ${env:GITHUB_WORKSPACE}\\cs-windows-firewall-bouncer.sln"
       - name: Build
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          dotnet build cs-windows-firewall-bouncer/cs-windows-firewall-bouncer.csproj -c Release
-          if ($LASTEXITCODE -ne 0) { throw "dotnet build failed with exit code $LASTEXITCODE" }
+          msbuild ${env:GITHUB_WORKSPACE}\cs-windows-firewall-bouncer.sln -t:cs-windows-firewall-bouncer:rebuild -property:Configuration=Release
+          if ($LASTEXITCODE -ne 0) { throw "msbuild failed with exit code $LASTEXITCODE" }
