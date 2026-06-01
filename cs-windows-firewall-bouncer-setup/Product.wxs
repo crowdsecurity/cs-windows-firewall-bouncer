@@ -119,7 +119,6 @@
               </Component>
               <Component Id="fwbouncerother" Guid="4b650a10-7531-4569-ba49-0867ddadf482">
                 <File Id="nlog.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\NLog.dll" Name="NLog.dll" />
-                <File Id="json.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" />
                 <File Id="fw.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\Interop.NetFwTypeLib.dll" Name="Interop.NetFwTypeLib.dll" />
                 <File Id="yaml.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\YamlDotNet.dll" Name="YamlDotNet.dll" />
                 <File Id="commandline.dll" Source="$(cs_windows_firewall_bouncer.TargetDir)\CommandLine.dll" Name="CommandLine.dll" />
