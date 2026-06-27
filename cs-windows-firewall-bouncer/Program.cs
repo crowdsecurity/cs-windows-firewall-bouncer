@@ -111,7 +111,28 @@ namespace cs_windows_firewall_bouncer
                 {
                     config.config.LogDir = "C:\\ProgramData\\CrowdSec\\log";
                 }
-                var logfile = new NLog.Targets.FileTarget("logfile") { FileName = System.IO.Path.Combine(config.config.LogDir, "cs_windows_firewall_bouncer.log") };
+
+                LogRotationSettings logRotation;
+                try
+                {
+                    logRotation = LogRotationSettings.From(config.config);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Invalid log rotation configuration: {0}", ex.Message);
+                    return;
+                }
+
+                var logfile = new NLog.Targets.FileTarget("logfile")
+                {
+                    FileName = System.IO.Path.Combine(config.config.LogDir, logRotation.LogName),
+                    ArchiveFileName = System.IO.Path.Combine(config.config.LogDir, logRotation.ArchiveFileName()),
+                    ArchiveNumbering = NLog.Targets.ArchiveNumberingMode.Sequence,
+                    ArchiveAboveSize = logRotation.MaxSize > 0 ? (long)logRotation.MaxSize * 1024 * 1024 : 0,
+                    MaxArchiveFiles = logRotation.MaxArchiveFiles(),
+                    MaxArchiveDays = logRotation.MaxAge,
+                    EnableArchiveFileCompression = logRotation.Compress,
+                };
                 loggerConfig.AddRule(logLevel, NLog.LogLevel.Fatal, logfile);
             }
             else if (config.config.LogMedia == "console")
