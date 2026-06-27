@@ -34,9 +34,12 @@ namespace Logging
         public LogCompressor(string logDir, string logName, int maxBackups, int maxAge, TimeSpan sweepInterval)
         {
             _dir = logDir;
-            _activeName = logName;
-            _baseName = Path.GetFileNameWithoutExtension(logName);
-            _ext = Path.GetExtension(logName);
+            // Use only the file name: matching compares against Path.GetFileName(path),
+            // so any directory component in logName would break active-log detection.
+            var fileName = Path.GetFileName(logName);
+            _activeName = fileName;
+            _baseName = Path.GetFileNameWithoutExtension(fileName);
+            _ext = Path.GetExtension(fileName);
             _maxBackups = maxBackups;
             _maxAge = maxAge;
             _sweepInterval = sweepInterval;
@@ -55,7 +58,7 @@ namespace Logging
             Directory.CreateDirectory(_dir);
 
             // Compress anything left uncompressed by a previous run, then prune.
-            Sweep();
+            SweepSafe();
 
             // A FileSystemWatcher gives prompt compression, but it can silently drop
             // events under bursty rotation (and is unreliable on some platforms), so a
@@ -68,7 +71,7 @@ namespace Logging
             _watcher.Renamed += OnArchiveAppeared;
             _watcher.EnableRaisingEvents = true;
 
-            _timer = new Timer(_ => Sweep(), null, _sweepInterval, _sweepInterval);
+            _timer = new Timer(_ => SweepSafe(), null, _sweepInterval, _sweepInterval);
         }
 
         // Compress every pending archive in the directory and enforce retention.
@@ -80,9 +83,24 @@ namespace Logging
             EnforceRetention();
         }
 
+        // Guarded entry point for the timer and watcher callbacks: an unhandled
+        // exception on a ThreadPool/timer callback can terminate the process, so a
+        // transient IO error must never escape here.
+        private void SweepSafe()
+        {
+            try
+            {
+                Sweep();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn("Log compression sweep failed: {0}", ex.Message);
+            }
+        }
+
         private void OnArchiveAppeared(object sender, FileSystemEventArgs e)
         {
-            Sweep();
+            SweepSafe();
         }
 
         // True for "<base>_*<ext>" files, excluding the active log and any .gz archive.

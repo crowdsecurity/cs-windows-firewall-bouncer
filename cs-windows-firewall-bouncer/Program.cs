@@ -106,6 +106,7 @@ namespace cs_windows_firewall_bouncer
             }
 
             LogRotationSettings logRotation = null;
+            NLog.Targets.FileTarget logfile = null;
             if (config.config.LogMedia == "file" || !Environment.UserInteractive)
             {
                 if (config.config.LogDir == "")
@@ -123,7 +124,7 @@ namespace cs_windows_firewall_bouncer
                     return;
                 }
 
-                var logfile = new NLog.Targets.FileTarget("logfile")
+                logfile = new NLog.Targets.FileTarget("logfile")
                 {
                     FileName = System.IO.Path.Combine(config.config.LogDir, logRotation.LogName),
                     ArchiveAboveSize = logRotation.ArchiveAboveSizeBytes(),
@@ -199,8 +200,17 @@ namespace cs_windows_firewall_bouncer
                 catch (Exception ex)
                 {
                     // Log compression is non-essential; never let it stop the bouncer.
-                    Logger.Warn("Could not start log compressor, continuing without log compression: {0}", ex.Message);
+                    // But NLog retention was disabled (MaxArchiveFiles=-1) on the
+                    // assumption the compressor would prune the .gz set, so fall back to
+                    // native NLog retention over uncompressed archives to keep disk bounded.
+                    Logger.Warn("Could not start log compressor; falling back to uncompressed NLog retention: {0}", ex.Message);
                     logCompressor = null;
+                    if (logfile != null)
+                    {
+                        logfile.MaxArchiveFiles = logRotation.MaxBackups;
+                        logfile.MaxArchiveDays = logRotation.MaxAge;
+                        NLog.LogManager.ReconfigExistingLoggers();
+                    }
                 }
             }
 

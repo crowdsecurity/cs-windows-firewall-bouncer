@@ -62,6 +62,12 @@ namespace Cfg
                 throw new ArgumentException("log_max_age must be >= 0");
             if (settings.MaxBackups < -1)
                 throw new ArgumentException("log_max_backups must be >= -1");
+            // log_name must be a bare file name: it is combined with log_dir and used
+            // for archive matching, so a path component could escape log_dir or break
+            // active-log detection. Reject both separators on any platform.
+            if (settings.LogName.IndexOfAny(new[] { '/', '\\' }) >= 0
+                || System.IO.Path.IsPathRooted(settings.LogName))
+                throw new ArgumentException("log_name must be a file name without any directory path");
 
             return settings;
         }

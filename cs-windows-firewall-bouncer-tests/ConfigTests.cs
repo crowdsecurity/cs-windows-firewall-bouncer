@@ -244,5 +244,22 @@ log_media: file
             var cfg = BouncerConfig.FromString(yaml).config;
             Assert.Throws<System.ArgumentException>(() => LogRotationSettings.From(cfg));
         }
+
+        [Theory]
+        [InlineData("sub/foo.log")]
+        [InlineData("..\\foo.log")]
+        [InlineData("/var/log/foo.log")]
+        [InlineData("C:\\temp\\foo.log")]
+        public void RejectsLogNameWithDirectoryComponent(string name)
+        {
+            var yaml = $@"
+api_endpoint: http://localhost:8080
+api_key: k
+log_media: file
+log_name: {name}
+";
+            var cfg = BouncerConfig.FromString(yaml).config;
+            Assert.Throws<System.ArgumentException>(() => LogRotationSettings.From(cfg));
+        }
     }
 }
