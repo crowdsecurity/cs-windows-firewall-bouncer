@@ -127,6 +127,9 @@ namespace cs_windows_firewall_bouncer
                 {
                     FileName = System.IO.Path.Combine(config.config.LogDir, logRotation.LogName),
                     ArchiveAboveSize = logRotation.ArchiveAboveSizeBytes(),
+                    // Pin the archive naming to "<base>_NN<ext>" rather than relying on
+                    // NLog's default suffix; LogCompressor matches this exact scheme.
+                    ArchiveSuffixFormat = "_{0:00}",
                 };
 
                 if (logRotation.Compress)
@@ -188,8 +191,17 @@ namespace cs_windows_firewall_bouncer
             Logging.LogCompressor logCompressor = null;
             if (logRotation != null && logRotation.Compress)
             {
-                logCompressor = new Logging.LogCompressor(config.config.LogDir, logRotation.LogName, logRotation.MaxBackups, logRotation.MaxAge);
-                logCompressor.Start();
+                try
+                {
+                    logCompressor = new Logging.LogCompressor(config.config.LogDir, logRotation.LogName, logRotation.MaxBackups, logRotation.MaxAge);
+                    logCompressor.Start();
+                }
+                catch (Exception ex)
+                {
+                    // Log compression is non-essential; never let it stop the bouncer.
+                    Logger.Warn("Could not start log compressor, continuing without log compression: {0}", ex.Message);
+                    logCompressor = null;
+                }
             }
 
             try

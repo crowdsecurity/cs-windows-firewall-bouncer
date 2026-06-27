@@ -48,6 +48,20 @@ namespace cs_windows_firewall_bouncer_tests
         }
 
         [Fact]
+        public void CompressPendingPreservesArchiveTimestamp()
+        {
+            Write("cs_windows_firewall_bouncer_01.log", "one");
+            var archivedAt = DateTime.UtcNow.AddDays(-10);
+            File.SetLastWriteTimeUtc(Path_("cs_windows_firewall_bouncer_01.log"), archivedAt);
+
+            new LogCompressor(_dir, LogName, -1, 0).CompressPending();
+
+            var gzWriteTime = File.GetLastWriteTimeUtc(Path_("cs_windows_firewall_bouncer_01.log.gz"));
+            Assert.True(Math.Abs((gzWriteTime - archivedAt).TotalSeconds) < 2,
+                $"expected ~{archivedAt:o}, got {gzWriteTime:o}");
+        }
+
+        [Fact]
         public void CompressPendingIsIdempotent()
         {
             Write("cs_windows_firewall_bouncer_01.log", "one");

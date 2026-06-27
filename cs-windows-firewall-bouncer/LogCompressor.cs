@@ -50,6 +50,10 @@ namespace Logging
 
         public void Start()
         {
+            // NLog creates the log directory lazily on first write, which may not have
+            // happened yet; FileSystemWatcher's constructor throws if it is missing.
+            Directory.CreateDirectory(_dir);
+
             // Compress anything left uncompressed by a previous run, then prune.
             Sweep();
 
@@ -114,12 +118,18 @@ namespace Logging
             {
                 try
                 {
+                    // Preserve the archive's original write time so retention-by-age (and
+                    // "keep newest N") reflects when the log was written, not when it was
+                    // compressed. Otherwise the startup sweep would reset the age of old
+                    // archives and keep them past log_max_age.
+                    var archivedAt = File.GetLastWriteTimeUtc(path);
                     using (var src = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                     using (var dst = new FileStream(gzPath, FileMode.Create, FileAccess.Write, FileShare.None))
                     using (var gz = new GZipStream(dst, CompressionLevel.Optimal))
                     {
                         src.CopyTo(gz);
                     }
+                    File.SetLastWriteTimeUtc(gzPath, archivedAt);
                     File.Delete(path);
                     return;
                 }
