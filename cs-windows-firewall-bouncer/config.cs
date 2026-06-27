@@ -66,18 +66,10 @@ namespace Cfg
             return settings;
         }
 
-        // Archive file-name pattern derived from LogName, e.g. "cs_windows_firewall_bouncer.{#}.log".
-        public string ArchiveFileName()
+        // ArchiveAboveSize value (bytes) for NLog's FileTarget; 0 disables size-based rotation.
+        public long ArchiveAboveSizeBytes()
         {
-            var name = System.IO.Path.GetFileNameWithoutExtension(LogName);
-            var ext = System.IO.Path.GetExtension(LogName);
-            return $"{name}.{{#}}{ext}";
-        }
-
-        // NLog MaxArchiveFiles value: -1 (unlimited) maps to 0 ("keep all").
-        public int MaxArchiveFiles()
-        {
-            return MaxBackups == -1 ? 0 : MaxBackups;
+            return MaxSize > 0 ? (long)MaxSize * 1024 * 1024 : 0;
         }
     }
 

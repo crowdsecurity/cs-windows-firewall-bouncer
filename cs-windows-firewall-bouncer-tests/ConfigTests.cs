@@ -169,8 +169,7 @@ compress_logs: false
             Assert.Equal(7, settings.MaxAge);
             Assert.Equal(5, settings.MaxBackups);
             Assert.False(settings.Compress);
-            Assert.Equal(5, settings.MaxArchiveFiles());
-            Assert.Equal("custom.{#}.log", settings.ArchiveFileName());
+            Assert.Equal(50L * 1024 * 1024, settings.ArchiveAboveSizeBytes());
         }
 
         [Fact]
@@ -195,12 +194,13 @@ log_media: file
             Assert.Equal(30, settings.MaxAge);
             Assert.Equal(1, settings.MaxBackups);
             Assert.True(settings.Compress);
-            Assert.Equal("cs_windows_firewall_bouncer.{#}.log", settings.ArchiveFileName());
+            Assert.Equal(100L * 1024 * 1024, settings.ArchiveAboveSizeBytes());
         }
 
         [Fact]
-        public void UnlimitedBackupsMapsToZeroArchiveFiles()
+        public void UnlimitedBackupsPreservesMinusOne()
         {
+            // NLog 6 uses -1 for "keep all", matching log_max_backups, so no remapping.
             const string yaml = @"
 api_endpoint: http://localhost:8080
 api_key: k
@@ -211,7 +211,22 @@ log_max_backups: -1
             var settings = LogRotationSettings.From(cfg);
 
             Assert.Equal(-1, settings.MaxBackups);
-            Assert.Equal(0, settings.MaxArchiveFiles());
+        }
+
+        [Fact]
+        public void ZeroMaxSizeDisablesSizeRotation()
+        {
+            const string yaml = @"
+api_endpoint: http://localhost:8080
+api_key: k
+log_media: file
+log_max_size: 0
+";
+            var cfg = BouncerConfig.FromString(yaml).config;
+            var settings = LogRotationSettings.From(cfg);
+
+            Assert.Equal(0, settings.MaxSize);
+            Assert.Equal(0, settings.ArchiveAboveSizeBytes());
         }
 
         [Theory]
