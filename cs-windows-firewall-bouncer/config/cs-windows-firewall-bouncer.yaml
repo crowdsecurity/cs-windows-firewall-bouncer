@@ -3,6 +3,11 @@ api_key: ${API_KEY}
 update_frequency: 10
 log_media: file
 log_dir: C:\\ProgramData\\CrowdSec\\log\\
+log_name: cs_windows_firewall_bouncer.log
+log_max_size: 100        # MB before rotation (0 = disabled)
+log_max_age: 30          # days to keep rotated logs (0 = unlimited)
+log_max_backups: 1       # rotated files to keep (-1 = unlimited)
+compress_logs: true      # gzip rotated logs to .log.gz
 prometheus:
   enabled: true
   listen_addr: 127.0.0.1

@@ -105,13 +105,49 @@ namespace cs_windows_firewall_bouncer
                 logLevel = NLog.LogLevel.Trace;
             }
 
+            LogRotationSettings logRotation = null;
+            NLog.Targets.FileTarget logfile = null;
             if (config.config.LogMedia == "file" || !Environment.UserInteractive)
             {
                 if (config.config.LogDir == "")
                 {
                     config.config.LogDir = "C:\\ProgramData\\CrowdSec\\log";
                 }
-                var logfile = new NLog.Targets.FileTarget("logfile") { FileName = System.IO.Path.Combine(config.config.LogDir, "cs_windows_firewall_bouncer.log") };
+
+                try
+                {
+                    logRotation = LogRotationSettings.From(config.config);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Invalid log rotation configuration: {0}", ex.Message);
+                    return;
+                }
+
+                logfile = new NLog.Targets.FileTarget("logfile")
+                {
+                    FileName = System.IO.Path.Combine(config.config.LogDir, logRotation.LogName),
+                    ArchiveAboveSize = logRotation.ArchiveAboveSizeBytes(),
+                    // Pin the archive naming to "<base>_NN<ext>" rather than relying on
+                    // NLog's default suffix; LogCompressor matches this exact scheme.
+                    ArchiveSuffixFormat = "_{0:00}",
+                };
+
+                if (logRotation.Compress)
+                {
+                    // Keep all uncompressed archives; the LogCompressor gzips them and
+                    // enforces count/age retention over the resulting .gz files (NLog
+                    // 6 has no native compression and can't track renamed archives).
+                    logfile.MaxArchiveFiles = -1;
+                    logfile.MaxArchiveDays = 0;
+                }
+                else
+                {
+                    // No compression: let NLog enforce retention over the .log archives.
+                    // NLog 6 uses the same convention as log_max_backups (-1 = unlimited).
+                    logfile.MaxArchiveFiles = logRotation.MaxBackups;
+                    logfile.MaxArchiveDays = logRotation.MaxAge;
+                }
                 loggerConfig.AddRule(logLevel, NLog.LogLevel.Fatal, logfile);
             }
             else if (config.config.LogMedia == "console")
@@ -153,33 +189,65 @@ namespace cs_windows_firewall_bouncer
                 }
             }
 
-            if (!Environment.UserInteractive)
+            Logging.LogCompressor logCompressor = null;
+            if (logRotation != null && logRotation.Compress)
             {
-                //Running in a service
-                Logger.Info("Running in service mode");
                 try
                 {
-                    ServiceBase.Run(new Service(config));
+                    logCompressor = new Logging.LogCompressor(config.config.LogDir, logRotation.LogName, logRotation.MaxBackups, logRotation.MaxAge);
+                    logCompressor.Start();
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("Exception while starting service: {0}", ex.Message);
+                    // Log compression is non-essential; never let it stop the bouncer.
+                    // But NLog retention was disabled (MaxArchiveFiles=-1) on the
+                    // assumption the compressor would prune the .gz set, so fall back to
+                    // native NLog retention over uncompressed archives to keep disk bounded.
+                    Logger.Warn("Could not start log compressor; falling back to uncompressed NLog retention: {0}", ex.Message);
+                    logCompressor = null;
+                    if (logfile != null)
+                    {
+                        logfile.MaxArchiveFiles = logRotation.MaxBackups;
+                        logfile.MaxArchiveDays = logRotation.MaxAge;
+                        NLog.LogManager.ReconfigExistingLoggers();
+                    }
                 }
             }
-            else
+
+            try
             {
-                Logger.Info("Running in interactive mode");
-                var metrics = new MetricsServer(config.config.Prometheus);
-                metrics.Start();
-                DecisionsManager mgr = new(config);
-                try
+                if (!Environment.UserInteractive)
                 {
-                    await mgr.Run();
+                    //Running in a service
+                    Logger.Info("Running in service mode");
+                    try
+                    {
+                        ServiceBase.Run(new Service(config));
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("Exception while starting service: {0}", ex.Message);
+                    }
                 }
-                finally
+                else
                 {
-                    metrics.Stop();
+                    Logger.Info("Running in interactive mode");
+                    var metrics = new MetricsServer(config.config.Prometheus);
+                    metrics.Start();
+                    DecisionsManager mgr = new(config);
+                    try
+                    {
+                        await mgr.Run();
+                    }
+                    finally
+                    {
+                        metrics.Stop();
+                    }
                 }
+            }
+            finally
+            {
+                logCompressor?.Dispose();
             }
         }
     }
